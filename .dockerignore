@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+public/reels
+.env
+.env.local
+.git
+**/*.log
+Dockerfile
+docker-compose.yml

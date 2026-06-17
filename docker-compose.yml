@@ -1,0 +1,55 @@
+services:
+  studio:
+    build:
+      context: .
+      args:
+        # Must match the `playwright` version in package.json so the image's
+        # bundled browsers are the right revision.
+        PLAYWRIGHT_VERSION: "1.61.0"
+    ports:
+      - "4000:4000"
+    # Secrets (OPENAI_API_KEY, EXPLORER_SESSION_SECRET, EXPLORER_LOGIN_EMAIL, …)
+    # come from .env at runtime — never baked into the image.
+    env_file:
+      - .env
+    environment:
+      # The browser/capture talks to localhost:3000, which the entrypoint's socat
+      # forwards to the host webapp. Using localhost (not host.docker.internal)
+      # keeps the origin identical to the host, so the webapp's Turbopack dev HMR
+      # WebSocket connects and the Explorer actually hydrates.
+      - EXPLORER_URL=https://www.gtocentral.com/explorer
+      # Where socat forwards to reach the host webapp.
+      - WEBAPP_HOST=host.docker.internal
+      - WEBAPP_PORT=3000
+      # GPU-less rendering inside the container.
+      - REMOTION_GL=angle
+      - PORT=4000
+    # Lets the container resolve the host (needed on Linux; harmless on Desktop).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Persist generated assets back to the host so reels survive container restarts.
+    volumes:
+      - ./out:/app/out
+      - ./public/reels:/app/public/reels
+    # Headroom for Chromium (Playwright capture + Remotion render).
+    shm_size: "1gb"
+    restart: unless-stopped
+
+  # Cloudflare Tunnel — exposes the studio on your custom domain. Opt-in:
+  #   docker compose --profile tunnel up --build
+  # Setup: create a Named Tunnel in the Cloudflare dashboard, add a Public
+  # Hostname route (your domain) → service http://studio:4000, then put the
+  # tunnel token in .env as TUNNEL_TOKEN. cloudflared shares this compose
+  # network, so it resolves "studio" by service name — no ports to expose.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate run
+    environment:
+      # Set this in .env (Cloudflare named-tunnel token). Empty default keeps
+      # non-tunnel `docker compose up` working; cloudflared only starts under the
+      # "tunnel" profile and will error clearly if the token is missing.
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN:-}
+    depends_on:
+      - studio
+    restart: unless-stopped

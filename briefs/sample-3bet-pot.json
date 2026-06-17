@@ -1,0 +1,10 @@
+{
+  "id": "3bet-pot-aq-flop",
+  "topic": "Defending the BB in a 3-bet pot",
+  "concept": "On A-7-2 rainbow as the 3-bet caller, most players over-fold. The solver checks a surprisingly strong range and bets a polarised one. Show the c-bet response range and the action frequencies, then drive to GTOCentral to explore it.",
+  "board": "As7d2c",
+  "street": "flop",
+  "category": "sdv",
+  "preflopLine": ["Fold", "Raise 2bb", "Fold", "Fold", "Raise 11bb", "Fold", "Call"],
+  "template": "data-graphics-v1"
+}

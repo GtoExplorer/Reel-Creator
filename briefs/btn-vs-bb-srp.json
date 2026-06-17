@@ -1,0 +1,8 @@
+{
+  "id": "btn-vs-bb-srp",
+  "topic": "BTN vs BB single-raised pot",
+  "concept": "Button opens, big blind defends. On most flops the Button's c-bet plan is far more selective than players realise — small bets with a wide range on dry boards, big polarised bets on wet ones, and more checks back than you'd ever guess. Show the opening range, the solver's decision tree, and how the board texture flips the whole strategy.",
+  "board": "Qh7d2s",
+  "street": "flop",
+  "preflopLine": ["Fold", "Fold", "Fold", "Raise 2.5bb", "Fold", "Call"]
+}

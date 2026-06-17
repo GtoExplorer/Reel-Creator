@@ -1,0 +1,41 @@
+{
+  "name": "gtocentral-reels-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Templated, AI-assisted pipeline that turns a brief into a finished GTOCentral Instagram Reel (animated data graphics + voiceover + captions).",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "generate": "tsx src/pipeline/run.ts",
+    "ui": "tsx src/ui/server.ts",
+    "captest": "tsx scripts/launchtest.ts",
+    "studio": "remotion studio src/remotion/index.ts",
+    "render": "remotion render src/remotion/index.ts Reel",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.477",
+    "@remotion/google-fonts": "4.0.477",
+    "@remotion/player": "4.0.477",
+    "dotenv": "^16.4.5",
+    "jose": "^6.2.3",
+    "next": "^14.2.15",
+    "openai": "^4.67.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.477",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "playwright": "1.61.0",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

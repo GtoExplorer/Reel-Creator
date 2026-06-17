@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+/* Brand tokens (mirror the gto-central webapp). Exposed to Tailwind v4 as
+   utilities: bg-bg, bg-surface, text-accent, border-line, etc. */
+@theme {
+  --color-bg: #18191a;
+  --color-surface: #242526;
+  --color-elevated: #2a2b2d;
+  --color-line: #2f3033;
+  --color-text: #ededed;
+  --color-muted: #a3a3a3;
+  --color-accent: #d0ab1d;
+  --color-accent-dim: #b8951a;
+
+  --font-sans: Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/* Dark, slim scrollbars to match the surface palette. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3b3d transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #3a3b3d;
+  border-radius: 8px;
+}
+
+/* Range inputs styled on-brand (used by the camera zoom sliders). */
+input[type="range"] {
+  accent-color: var(--color-accent);
+}
+
+/* Reusable brand primitives (kept as plain CSS so they don't depend on @apply). */
+.btn {
+  background: var(--color-accent);
+  color: #18191a;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.12s ease;
+}
+.btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--color-line);
+  color: var(--color-text);
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: #4a4b4d;
+  background: #ffffff08;
+}
+.btn-mini {
+  padding: 4px 9px;
+  font-size: 13px;
+  border-radius: 8px;
+  line-height: 1;
+}
+.input {
+  width: 100%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  color: var(--color-text);
+  padding: 9px 11px;
+  font: inherit;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+textarea.input {
+  resize: vertical;
+  min-height: 64px;
+}
+.label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-muted);
+  margin: 12px 0 5px;
+}
+.logbox {
+  background: #0e0f10;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  padding: 12px;
+  font: 12px/1.45 ui-monospace, SFMono-Regular, monospace;
+  white-space: pre-wrap;
+  color: #cfd3d6;
+  overflow: auto;
+}
