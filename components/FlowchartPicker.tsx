@@ -1,8 +1,10 @@
 "use client";
+import type { CSSProperties } from "react";
 import type { DraftScene, FlowNode } from "@/src/types";
+import { FlowchartView } from "@/src/flowchart/FlowchartView";
 
-// Renders the captured flowchart image with a clickable marker on every node, so
-// the camera path is built by clicking the actual nodes (not guessing from names).
+// Renders the native flowchart with a clickable marker on every node, so the
+// camera path is built by clicking the actual nodes (not guessing from names).
 export function FlowchartPicker({
   scene,
   onAddNode,
@@ -12,7 +14,7 @@ export function FlowchartPicker({
   onAddNode: (n: FlowNode) => void;
   onAddZoomOut: () => void;
 }) {
-  if (!scene.image) return null;
+  if (!scene.flowchart) return null;
   const nodes = scene.nodes ?? [];
   const camera = scene.camera ?? [];
 
@@ -31,9 +33,11 @@ export function FlowchartPicker({
         </button>
       </div>
       <div className="max-h-[440px] overflow-auto rounded-lg border border-line bg-black">
-        <div className="relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/${scene.image}`} alt="flowchart" draggable={false} className="block w-full select-none" />
+        <div
+          className="relative min-w-[720px]"
+          style={{ aspectRatio: `${scene.flowchart.width} / ${scene.flowchart.height}` } as CSSProperties}
+        >
+          <FlowchartView layout={scene.flowchart} />
           <div className="absolute inset-0">
             {nodes.map((n, i) => {
               const ord = orderOf(n);
@@ -50,7 +54,7 @@ export function FlowchartPicker({
                 <button
                   key={i}
                   onClick={() => onAddNode(n)}
-                  title={`${n.label}${n.kind ? ` · ${n.kind}` : ""}`}
+                  title={`${n.label}${n.kind ? ` - ${n.kind}` : ""}`}
                   style={{ left: `${n.cx * 100}%`, top: `${n.cy * 100}%` }}
                   className={`group absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center border-2 text-[10px] font-bold shadow transition hover:z-20 hover:scale-125 ${
                     n.kind === "edge" ? "h-5 w-5 rotate-45" : "h-6 w-6 rounded-full"
@@ -59,8 +63,8 @@ export function FlowchartPicker({
                   <span className={n.kind === "edge" ? "-rotate-45" : ""}>{inPath ? ord.join(",") : ""}</span>
                   <span className="pointer-events-none absolute left-1/2 top-full z-30 mt-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-line bg-black/95 px-2 py-1 text-[11px] font-normal text-white group-hover:block">
                     <span className={kindColor}>{n.kind === "edge" ? "decision" : n.kind ?? "node"}</span>
-                    {n.kind !== "edge" && n.edge ? ` · via ${n.edge}` : ""}
-                    {" — "}
+                    {n.kind !== "edge" && n.edge ? ` - via ${n.edge}` : ""}
+                    {" - "}
                     {n.label}
                   </span>
                 </button>

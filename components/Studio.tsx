@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import type { DraftManifest, DraftScene, RenderManifest, SceneType } from "@/src/types";
 import type { ReelSummary } from "@/src/pipeline/library";
 import type { SceneEdit } from "@/src/pipeline/stages";
-import { streamFetch } from "@/lib/clientStream";
+import { parseStreamMarkerJson, streamFetch } from "@/lib/clientStream";
 import { makeScene, draftToPreview } from "@/lib/scenes";
 import { Sidebar } from "./Sidebar";
 import { BriefForm } from "./BriefForm";
@@ -46,7 +46,7 @@ export function Studio() {
     loadReels();
     fetch("/api/health")
       .then((r) => r.json())
-      .then((j) => setHealth(j.browser === "ok" ? "ok" : "error"))
+      .then((j) => setHealth(j.api === "ok" ? "ok" : "error"))
       .catch(() => setHealth("error"));
   }, [loadReels]);
 
@@ -72,7 +72,7 @@ export function Studio() {
   }
 
   async function deleteReel(id: string) {
-    if (!confirm(`Delete "${id}"? This permanently removes its files (video, draft, captured assets).`)) return;
+    if (!confirm(`Delete "${id}"? This permanently removes its files (video, draft, generated assets).`)) return;
     const res = await fetch(`/api/reels/${id}`, { method: "DELETE" });
     if (!res.ok) {
       alert("Delete failed");
@@ -121,7 +121,7 @@ export function Studio() {
     invalidate();
   }
   function addScene(t: SceneType) {
-    setDraft((d) => (d ? { ...d, scenes: [...d.scenes, makeScene(t, d.pool)] } : d));
+    setDraft((d) => (d ? { ...d, scenes: [...d.scenes, makeScene(t, d.pool, d.loadId)] } : d));
     setClips((c) => [...c, null]);
     invalidate();
   }
@@ -143,12 +143,11 @@ export function Studio() {
       setBuildLog(String(e));
     }
     setVoicing(false);
-    const m = buf.match(/__MANIFEST__ ([\s\S]+)/);
-    if (!m) {
-      alert("Voicing failed — see logs");
+    const mf = parseStreamMarkerJson<RenderManifest>(buf, "__MANIFEST__");
+    if (!mf) {
+      alert("Voicing failed - see logs");
       return null;
     }
-    const mf = JSON.parse(m[1].trim()) as RenderManifest;
     setManifest(mf);
     return mf;
   }
@@ -231,3 +230,5 @@ export function Studio() {
     </div>
   );
 }
+
+export default Studio;

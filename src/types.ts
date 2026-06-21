@@ -54,15 +54,26 @@ export const RangeCell = z.object({
 });
 export type RangeCell = z.infer<typeof RangeCell>;
 
-// A flowchart node's label + normalised centre (0-1) within the captured image,
+export const SceneFilter = z.object({
+  property: z.string(),
+  value: z.string(),
+  label: z.string().optional(),
+  valueLabel: z.string().optional(),
+});
+export type SceneFilter = z.infer<typeof SceneFilter>;
+
+// A flowchart node's label + normalised centre (0-1) within the rendered tree,
 // plus a short summary of its strategy (for contextual narration).
 export const FlowNode = z.object({
+  id: z.string().optional(), // layout node id, or edge id for decision/branch stops
   label: z.string(),
   cx: z.number(),
   cy: z.number(),
   summary: z.string().optional(),
   kind: z.enum(["split", "strategy", "edge"]).optional(), // split = decides on a feature; strategy = an action mix; edge = a decision/branch point
   edge: z.string().optional(), // the branch/decision label that leads INTO this node
+  source: z.string().optional(), // decision edge source node id (edge stops only)
+  target: z.string().optional(), // decision edge target node id (edge stops only)
 });
 export type FlowNode = z.infer<typeof FlowNode>;
 
@@ -80,6 +91,45 @@ export const CameraStep = z.object({
   atSec: z.number().optional(),
 });
 export type CameraStep = z.infer<typeof CameraStep>;
+
+// A natively-rendered decision tree (replaces the captured flowchart image).
+// Coordinates are in layout pixels within {width,height}; the camera/picker use
+// the normalised FlowNode[] alongside this.
+export const LaidNode = z.object({
+  id: z.string(),
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+  kind: z.enum(["split", "strategy"]),
+  label: z.string(),
+  edge: z.string().optional(), // decision leading into this node
+  predictions: z.array(FreqBar), // freq 0-100, sorted
+});
+export type LaidNode = z.infer<typeof LaidNode>;
+
+export const LaidEdge = z.object({
+  id: z.string().optional(),
+  source: z.string().optional(),
+  target: z.string().optional(),
+  points: z.array(z.object({ x: z.number(), y: z.number() })),
+  label: z.string().optional(),
+  labelX: z.number(),
+  labelY: z.number(),
+});
+export type LaidEdge = z.infer<typeof LaidEdge>;
+
+export const FlowchartDirection = z.enum(["TB", "LR"]);
+export type FlowchartDirection = z.infer<typeof FlowchartDirection>;
+
+export const FlowchartLayout = z.object({
+  direction: FlowchartDirection.default("TB"),
+  width: z.number(),
+  height: z.number(),
+  nodes: z.array(LaidNode),
+  edges: z.array(LaidEdge),
+});
+export type FlowchartLayout = z.infer<typeof FlowchartLayout>;
 
 export const SpotData = z.object({
   label: z.string(),
@@ -104,7 +154,7 @@ export const Brief = z.object({
   highlightCategory: z.string().optional(), // which hand class the freq scene zooms into
   boardCategory: z.string().optional(), // board property for the board-selection bars (default flop_top_card_rank)
   gameId: z.string().optional(), // preflop wizard game id (defaults to the first game)
-  // Preflop line to click in the Explorer to reach the load whose flowchart we capture.
+  // Preflop line used to resolve the postflop load id.
   preflopLine: z.array(z.string()).optional(),
   template: z.string().default("data-graphics-v1"),
 });
@@ -126,11 +176,15 @@ export const RenderScene = z.object({
   audioFile: z.string(), // path relative to public/, e.g. "reels/<id>/scene_0.mp3"
   durationSec: z.number(),
   words: z.array(WordTimestamp),
+  loadId: z.number().optional(), // scene-level override; defaults to draft loadId
+  filters: z.array(SceneFilter).optional(), // property/value filters applied to scene data fetches
+  category: z.string().optional(), // for bar-chart scenes: which aggregate property is shown
   categories: z.array(CategoryStrategy).optional(), // strategyBars / boardSelections scene
   freqBars: z.array(FreqBar).optional(), // freqBars scene
   rangeGrid: z.array(RangeCell).optional(), // preflopMatrix scene (native 13x13)
-  image: z.string().optional(), // captured asset (path relative to public/), e.g. flowchart
-  zoom: z.number().optional(), // captured-scene end zoom (default 1.2)
+  image: z.string().optional(), // legacy captured asset (path relative to public/)
+  flowchart: FlowchartLayout.optional(), // natively-rendered decision tree
+  zoom: z.number().optional(), // flowchart/captured-scene end zoom (default 1.2)
   panY: z.number().optional(), // captured-scene vertical offset, % (default 0)
   nodes: z.array(FlowNode).optional(), // flowchart node positions for camera targeting
   camera: z.array(CameraStep).optional(), // flowchart camera path (waypoints)
@@ -145,11 +199,14 @@ export const DraftScene = z.object({
   headline: z.string(),
   subtext: z.string(),
   voiceover: z.string(),
+  loadId: z.number().optional(), // scene-level override; defaults to draft loadId
+  filters: z.array(SceneFilter).optional(), // property/value filters applied to scene data fetches
   category: z.string().optional(), // for bar-chart scenes: which aggregate property is shown
   categories: z.array(CategoryStrategy).optional(),
   freqBars: z.array(FreqBar).optional(),
   rangeGrid: z.array(RangeCell).optional(),
   image: z.string().optional(),
+  flowchart: FlowchartLayout.optional(),
   zoom: z.number().optional(),
   panY: z.number().optional(),
   nodes: z.array(FlowNode).optional(),
@@ -159,12 +216,13 @@ export const DraftScene = z.object({
 });
 export type DraftScene = z.infer<typeof DraftScene>;
 
-// All assets captured/fetched for a spot, so the editor can add ANY scene type
-// (or rebuild one) without re-running capture. Every field is optional.
+// All assets fetched for a spot, so the editor can add ANY scene type (or
+// rebuild one) without re-running draft creation. Every field is optional.
 export const DraftPool = z.object({
   image: z.string().optional(),
   imageW: z.number().optional(),
   imageH: z.number().optional(),
+  flowchart: FlowchartLayout.optional(),
   nodes: z.array(FlowNode).optional(),
   preflopGrid: z.array(RangeCell).optional(),
   preflopLabel: z.string().optional(),

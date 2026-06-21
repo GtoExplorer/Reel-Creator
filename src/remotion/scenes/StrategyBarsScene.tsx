@@ -1,8 +1,8 @@
 import React from "react";
 import { spring, useCurrentFrame, useVideoConfig } from "remotion";
-import type { RenderScene, FreqBar } from "../../types.js";
+import type { CategoryStrategy, RenderScene, FreqBar } from "../../types.js";
 import { theme } from "../theme.js";
-import { KIND_ORDER, actionColor, sortActions } from "../../poker/ranges.js";
+import { KIND_ORDER, actionColor, rankSortValue, sortActions } from "../../poker/ranges.js";
 
 const KIND_LABEL: Record<FreqBar["kind"], string> = {
   raise: "Raise",
@@ -23,10 +23,30 @@ const Legend: React.FC<{ kinds: FreqBar["kind"][] }> = ({ kinds }) => (
   </div>
 );
 
+function isRankAggregate(category?: string): boolean {
+  return !!category && (category.endsWith("_card_rank") || category === "turn_rank" || category === "river_rank");
+}
+
+function looksLikeRankSeries(cats: CategoryStrategy[]): boolean {
+  if (cats.length < 5 || cats.length > 13) return false;
+  const values = cats.map((c) => rankSortValue(c.category));
+  return values.every((v) => v >= 2 && v <= 14) && new Set(values).size === values.length;
+}
+
+function orderRows(scene: RenderScene): CategoryStrategy[] {
+  const cats = scene.categories ?? [];
+  if (!isRankAggregate(scene.category) && !looksLikeRankSeries(cats)) return cats;
+  return cats
+    .map((c, i) => ({ c, i, v: rankSortValue(c.category) }))
+    .sort((a, b) => (a.v === b.v ? a.i - b.i : a.v - b.v))
+    .map(({ c }) => c);
+}
+
 export const StrategyBarsScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const cats = scene.categories ?? [];
+  // Rendered in the data's natural order (card value ascending) — matches the Explorer.
+  const cats = orderRows(scene);
   const kindsPresent = KIND_ORDER.filter((k) => cats.some((c) => c.actions.some((a) => a.kind === k)));
 
   return (

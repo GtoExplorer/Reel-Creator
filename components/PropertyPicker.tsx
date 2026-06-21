@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CategoryStrategy } from "@/src/types";
 import { propertyGroups, prettyProperty } from "@/lib/properties";
 
@@ -17,7 +17,17 @@ export function PropertyPicker({
   onPick: (categories: CategoryStrategy[], category: string, label: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const [labels, setLabels] = useState<Record<string, string>>({});
   const groups = propertyGroups(street);
+
+  // Human-readable property names from the API (same source as the Explorer).
+  useEffect(() => {
+    fetch("/api/properties")
+      .then((r) => r.json())
+      .then((j) => j && typeof j === "object" && setLabels(j))
+      .catch(() => {});
+  }, []);
+  const labelFor = (c: string) => labels[c] || prettyProperty(c);
 
   async function pick(category: string) {
     if (!category) return;
@@ -45,7 +55,7 @@ export function PropertyPicker({
           <optgroup key={g.label} label={g.label}>
             {g.categories.map((c) => (
               <option key={c} value={c}>
-                {prettyProperty(c)}
+                {labelFor(c)}
               </option>
             ))}
           </optgroup>

@@ -3,14 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { chromium } from "playwright";
 import { Brief, DraftManifest } from "../types.js";
 import { ROOT, prepareDraft, buildReel, type SceneEdit } from "../pipeline/stages.js";
 import { narrateFlowchart } from "../openai/script.js";
 
 /*
   Control-panel editor for the reels pipeline.
-    1. Draft  — capture + data + script (no voice/render yet)
+    1. Draft  - solver data + script (no voice/render yet)
     2. Edit   — tweak each scene's text, zoom/pan, and voice (AI or your own mic)
     3. Build  — voice + render
   Run with: npm run ui  → http://localhost:5673
@@ -245,19 +244,6 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => console.log(`\n🎬 Reels editor → http://localhost:${PORT}\n`));
 
-// Fail-loud at startup if the Playwright browser can't launch, so a broken
-// install is obvious here rather than as a cryptic error mid-draft.
-chromium
-  .launch({ args: ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"] })
-  .then((b) => b.close())
-  .then(() => console.log("✓ Playwright browser OK — ready to capture flowcharts"))
-  .catch((e) =>
-    console.error(
-      "\n⚠ Playwright browser won't launch — flowchart capture will fail.\n  Fix: npx playwright install chromium\n  (" +
-        (e as Error).message.split("\n")[0] +
-        ")\n"
-    )
-  );
 
 const HTML = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GTOCentral Reels</title><style>
@@ -285,7 +271,7 @@ pre{background:#0e0f10;border:1px solid var(--line);border-radius:10px;padding:1
 .reel video{width:84px;border-radius:8px;background:#000}.reel a{color:var(--accent);text-decoration:none;font-size:13px}
 video.preview{width:260px;border-radius:12px;background:#000;display:block;margin-top:10px}
 </style></head><body><div class="wrap">
-<h1>GTO<span>CENTRAL</span> Reels</h1><p class="sub">Draft → edit → build. The webapp dev server must be running for the flowchart capture.</p>
+<h1>GTO<span>CENTRAL</span> Reels</h1><p class="sub">Draft -> edit -> build. Flowcharts render from solver API data.</p>
 
 <div class="card" id="briefCard">
   <label>Topic</label><input id="topic" placeholder="BTN vs BB single-raised pot">

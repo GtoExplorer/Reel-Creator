@@ -54,7 +54,7 @@ export async function generateStoryboard(brief: Brief, facts = "") {
       { role: "system", content: SYSTEM },
       {
         role: "user",
-        content: `Brief topic: ${brief.topic}\nConcept: ${brief.concept}\nSpot label: ${label}\nThe preflopMatrix, flowchart and boardSelections scenes each show a real screenshot of the GTOCentral Explorer for this spot. Write copy that frames each view compellingly.${factsBlock}\n\nWrite the storyboard.`,
+        content: `Brief topic: ${brief.topic}\nConcept: ${brief.concept}\nSpot label: ${label}\nThe preflopMatrix, flowchart and boardSelections scenes each show real solver-backed visuals for this spot. Write copy that frames each view compellingly.${factsBlock}\n\nWrite the storyboard.`,
       },
     ],
     response_format: { type: "json_schema", json_schema: JSON_SCHEMA },

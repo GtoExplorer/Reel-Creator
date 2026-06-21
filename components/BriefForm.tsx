@@ -1,7 +1,8 @@
 "use client";
+import type { SyntheticEvent } from "react";
 import { useState } from "react";
 import type { DraftManifest } from "@/src/types";
-import { streamFetch } from "@/lib/clientStream";
+import { parseStreamMarkerJson, streamFetch } from "@/lib/clientStream";
 import { LogConsole } from "./LogConsole";
 
 export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) {
@@ -14,7 +15,8 @@ export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) 
   const [log, setLog] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function deriveLine() {
+  async function deriveLine(e?: SyntheticEvent) {
+    e?.preventDefault();
     if (!loadId.trim()) return;
     setDeriving(true);
     try {
@@ -22,18 +24,19 @@ export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) 
       if (r.line?.length) setLine(r.line.join(", "));
       else alert(r.error || "Could not derive a line for that load id");
     } catch {
-      alert("Derive failed — is the webapp running?");
+      alert("Derive failed - check the API proxy and credentials");
     }
     setDeriving(false);
   }
 
-  async function create() {
+  async function create(e?: SyntheticEvent) {
+    e?.preventDefault();
     if (!topic.trim() || !concept.trim()) {
       alert("Topic and concept are required");
       return;
     }
     setBusy(true);
-    setLog("Capturing + scripting…\n");
+    setLog("Fetching solver data + scripting...\n");
     const preflopLine = line.split(",").map((s) => s.trim()).filter(Boolean);
     let buf = "";
     try {
@@ -52,44 +55,38 @@ export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) 
       setLog(String(e));
     }
     setBusy(false);
-    const m = buf.match(/__DRAFT__ ([\s\S]+)/);
-    if (!m) {
-      alert("Draft failed — see logs");
+    const draft = parseStreamMarkerJson<DraftManifest>(buf, "__DRAFT__");
+    if (!draft) {
+      alert("Draft failed - see logs");
       return;
     }
-    onDraft(JSON.parse(m[1].trim()));
+    onDraft(draft);
   }
 
   return (
     <div className="card max-w-2xl p-5">
       <h2 className="mb-1 text-lg font-semibold">New reel</h2>
       <p className="mb-3 text-sm text-muted">
-        The gto-central webapp dev server must be running on <code className="text-text">:3000</code> for flowchart
-        capture.
+        Enter a load ID, or enter a preflop line and the studio will resolve the load from the API.
       </p>
 
       <div className="label">Topic</div>
       <input className="input" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="BTN vs BB: the c-bet trap" />
 
       <div className="label">Concept</div>
-      <textarea
-        className="input"
-        value={concept}
-        onChange={(e) => setConcept(e.target.value)}
-        placeholder="What the reel teaches…"
-      />
+      <textarea className="input" value={concept} onChange={(e) => setConcept(e.target.value)} placeholder="What the reel teaches..." />
 
-      <div className="label">Load ID (optional — auto-fills the line)</div>
+      <div className="label">Load ID (optional - auto-fills the line)</div>
       <div className="flex gap-2">
         <input
           className="input"
           value={loadId}
           onChange={(e) => setLoadId(e.target.value)}
           placeholder="68617"
-          onKeyDown={(e) => e.key === "Enter" && deriveLine()}
+          onKeyDown={(e) => e.key === "Enter" && deriveLine(e)}
         />
-        <button className="btn-ghost whitespace-nowrap" onClick={deriveLine} disabled={deriving || !loadId.trim()}>
-          {deriving ? "Deriving…" : "Derive line"}
+        <button type="button" className="btn-ghost whitespace-nowrap" onClick={deriveLine} disabled={deriving || !loadId.trim()}>
+          {deriving ? "Deriving..." : "Derive line"}
         </button>
       </div>
 
@@ -105,8 +102,8 @@ export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) 
       <input className="input" value={board} onChange={(e) => setBoard(e.target.value)} placeholder="8h7h4c" />
 
       <div className="mt-4">
-        <button className="btn" disabled={busy} onClick={create}>
-          {busy ? "Working…" : "Create draft"}
+        <button type="button" className="btn" disabled={busy} onClick={create}>
+          {busy ? "Working..." : "Create draft"}
         </button>
       </div>
       <LogConsole text={log} />

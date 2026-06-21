@@ -18,7 +18,7 @@ const SceneBody: React.FC<{ scene: RenderScene }> = ({ scene }) => {
     case "hook":
       return <HookScene scene={scene} />;
     case "flowchart":
-      return <CaptureScene scene={scene} />; // captured xyflow screenshot
+      return <CaptureScene scene={scene} />; // native decision tree camera
     case "preflopMatrix":
       return <RangeGridScene scene={scene} />; // native 13x13
     case "boardSelections":

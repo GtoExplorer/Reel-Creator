@@ -2,10 +2,6 @@ services:
   studio:
     build:
       context: .
-      args:
-        # Must match the `playwright` version in package.json so the image's
-        # bundled browsers are the right revision.
-        PLAYWRIGHT_VERSION: "1.61.0"
     ports:
       - "4000:4000"
     # Secrets (OPENAI_API_KEY, EXPLORER_SESSION_SECRET, EXPLORER_LOGIN_EMAIL, …)
@@ -13,12 +9,11 @@ services:
     env_file:
       - .env
     environment:
-      # The browser/capture talks to localhost:3000, which the entrypoint's socat
-      # forwards to the host webapp. Using localhost (not host.docker.internal)
-      # keeps the origin identical to the host, so the webapp's Turbopack dev HMR
-      # WebSocket connects and the Explorer actually hydrates.
+      # Solver data is fetched through the webapp's /api/gto proxy. Use a public
+      # origin here, or keep localhost and let the entrypoint forward it to the
+      # host webapp with socat.
       - EXPLORER_URL=https://www.gtocentral.com/explorer
-      # Where socat forwards to reach the host webapp.
+      # Where socat forwards when EXPLORER_URL points at localhost.
       - WEBAPP_HOST=host.docker.internal
       - WEBAPP_PORT=3000
       # GPU-less rendering inside the container.
@@ -31,7 +26,7 @@ services:
     volumes:
       - ./out:/app/out
       - ./public/reels:/app/public/reels
-    # Headroom for Chromium (Playwright capture + Remotion render).
+    # Headroom for Remotion's headless renderer.
     shm_size: "1gb"
     restart: unless-stopped
 

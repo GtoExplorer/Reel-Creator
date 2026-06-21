@@ -54,11 +54,14 @@ export function manifestToDraft(m: {
     headline: s.headline,
     subtext: s.subtext,
     voiceover: s.voiceover,
+    loadId: s.loadId,
+    filters: s.filters,
     category: s.category,
     categories: s.categories,
     freqBars: s.freqBars,
     rangeGrid: s.rangeGrid,
     image: s.image,
+    flowchart: s.flowchart,
     zoom: s.zoom,
     panY: s.panY,
     nodes: s.nodes,
@@ -69,6 +72,7 @@ export function manifestToDraft(m: {
   const pool: Record<string, unknown> = {};
   for (const s of scenes as Record<string, unknown>[]) {
     if (s.image) { pool.image = s.image; pool.imageW = s.imageW; pool.imageH = s.imageH; pool.nodes = s.nodes; }
+    if (s.flowchart) { pool.flowchart = s.flowchart; pool.nodes = s.nodes; }
     if (s.rangeGrid) { pool.preflopGrid = s.rangeGrid; pool.preflopLabel = s.headline; }
     if (s.type === "boardSelections" && s.categories) { pool.boardCategories = s.categories; pool.boardLabel = s.headline; }
     if (s.type === "strategyBars" && s.categories) { pool.categories = s.categories; }

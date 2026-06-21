@@ -1,10 +1,10 @@
 import { config } from "../config.js";
 import { mintSession } from "../capture/session.js";
-import type { Brief, SpotData, CategoryStrategy, FreqBar, RangeCell } from "../types.js";
+import type { Brief, SpotData, CategoryStrategy, FreqBar, RangeCell, SceneFilter } from "../types.js";
+import { filterQueryParts } from "./filters.js";
 import {
   actionDisplayName,
   actionKind,
-  aggression,
   buildMockCategories,
   buildMockGrid,
   comboLabel,
@@ -20,7 +20,10 @@ import {
 //   [{ category: str|bool|int, strategy: { <action>: <freq 0-1> } }, ...]
 type AggregateRow = { category: string | number | boolean; strategy: Record<string, number> };
 
-const MAX_ROWS = 9;
+// Cap on bar rows - enough for all 13 card ranks (the largest property).
+// Rank properties are normalized to card value ascending; other properties keep
+// the API's natural order.
+const MAX_BARS = 13;
 
 // Data goes through the local webapp's /api/gto proxy (same backend the Explorer
 // uses), authed with the same minted session cookie — so an auto-detected load id
@@ -33,28 +36,22 @@ async function authCookie(): Promise<string> {
 function proxyBase(): string {
   return `${new URL(config.explorerUrl).origin}/api/gto`;
 }
-async function authGet(pathStr: string): Promise<Response> {
+export async function authGet(pathStr: string): Promise<Response> {
   return fetch(`${proxyBase()}${pathStr}`, { headers: { Cookie: await authCookie() } });
 }
 
 function buildSpot(label: string, categories: CategoryStrategy[], brief: Brief): SpotData {
-  // Order strong -> weak (more bet/raise = stronger). If there are more classes
-  // than fit, downsample evenly so the chart keeps the full gradient.
-  const sorted = [...categories].sort((a, b) => aggression(b) - aggression(a));
-  const ranked =
-    sorted.length <= MAX_ROWS
-      ? sorted
-      : Array.from({ length: MAX_ROWS }, (_, i) => sorted[Math.round((i * (sorted.length - 1)) / (MAX_ROWS - 1))]);
-
-  const fallback = ranked[Math.floor(ranked.length / 2)] ?? ranked[0];
+  // Keep the API's natural order (same as the Explorer's bar charts) — no sorting.
+  const ordered = categories.slice(0, MAX_BARS);
+  const fallback = ordered[Math.floor(ordered.length / 2)] ?? ordered[0];
   const highlight =
     (brief.highlightCategory
-      ? ranked.find((c) => c.category.toLowerCase() === brief.highlightCategory!.toLowerCase())
+      ? ordered.find((c) => c.category.toLowerCase() === brief.highlightCategory!.toLowerCase())
       : undefined) ?? fallback;
 
   return {
     label,
-    categories: ranked,
+    categories: ordered,
     highlightLabel: highlight?.category ?? "",
     highlightBars: highlight?.actions ?? [],
   };
@@ -68,15 +65,98 @@ function mockSpot(brief: Brief): SpotData {
   return spot;
 }
 
-function parseAggregate(rows: AggregateRow[]): CategoryStrategy[] {
-  return rows.map((row) => ({
-    category: prettyCategory(String(row.category)),
-    actions: sortActions(
-      Object.entries(row.strategy)
-        .filter(([, freq]) => freq != null)
-        .map(([action, freq]) => ({ action: prettyAction(action), freq: Math.round(freq * 1000) / 10, kind: actionKind(action) }))
-    ),
-  }));
+// Human-readable label maps, fetched once from the same endpoints the Explorer
+// uses (/properties/ for property names, /property_values/ for the values shown
+// on the bars). Both expose human_readable.{flowchart,barchart}; bar charts use
+// the `barchart` variant. Falls back to a local prettifier on failure.
+type LabelMaps = {
+  props: Record<string, string>; // barchart variant
+  propsFlowchart: Record<string, string>; // flowchart variant (for the decision tree)
+  values: Record<string, Record<string, string>>;
+};
+const clean = (s: string) => s.replace(/\s+/g, " ").trim();
+let _labelMaps: LabelMaps | undefined;
+async function labelMaps(): Promise<LabelMaps> {
+  if (_labelMaps) return _labelMaps;
+  const maps: LabelMaps = { props: {}, propsFlowchart: {}, values: {} };
+  try {
+    const [pr, pv] = await Promise.all([authGet("/properties/"), authGet("/property_values/")]);
+    if (pr.ok) {
+      const rows = (await pr.json()) as { property: string; human_readable?: { barchart?: string; flowchart?: string } }[];
+      for (const r of rows)
+        if (r.property) {
+          maps.props[r.property] = clean(r.human_readable?.barchart ?? r.property);
+          maps.propsFlowchart[r.property] = clean(r.human_readable?.flowchart ?? r.property);
+        }
+    }
+    if (pv.ok) {
+      const raw = (await pv.json()) as Record<string, { value: string; human_readable?: { barchart?: string } }[]>;
+      for (const [k, arr] of Object.entries(raw)) {
+        const m: Record<string, string> = {};
+        for (const it of arr) m[String(it.value)] = clean(it.human_readable?.barchart ?? String(it.value));
+        maps.values[k] = m;
+      }
+    }
+  } catch (e) {
+    console.warn("[solverApi] label maps fetch failed:", (e as Error).message);
+  }
+  _labelMaps = maps;
+  return maps;
+}
+const propLabel = (maps: LabelMaps, property: string) => maps.props[property] ?? prettyCategory(property);
+
+// Exposed for the editor's property dropdown (human-readable property names).
+export async function fetchPropertyLabels(): Promise<Record<string, string>> {
+  if (!config.explorerSessionSecret || !config.explorerLoginEmail) return {};
+  return (await labelMaps()).props;
+}
+
+
+export async function fetchPropertyValueOptions(): Promise<Record<string, { value: string; label: string }[]>> {
+  if (!config.explorerSessionSecret || !config.explorerLoginEmail) return {};
+  const maps = await labelMaps();
+  return Object.fromEntries(
+    Object.entries(maps.values).map(([property, values]) => [
+      property,
+      Object.entries(values).map(([value, label]) => ({ value, label })),
+    ])
+  );
+}
+// Flowchart-variant property labels (feature → human name) for the decision tree.
+export async function fetchFlowchartPropertyLabels(): Promise<Record<string, string>> {
+  if (!config.explorerSessionSecret || !config.explorerLoginEmail) return {};
+  return (await labelMaps()).propsFlowchart;
+}
+
+function parseAggregate(rows: AggregateRow[], valueLabels?: Record<string, string>): CategoryStrategy[] {
+  return rows.map((row) => {
+    const raw = String(row.category);
+    return {
+      category: valueLabels?.[raw] ?? prettyCategory(raw),
+      actions: sortActions(
+        Object.entries(row.strategy)
+          .filter(([, freq]) => freq != null)
+          .map(([action, freq]) => ({ action: prettyAction(action), freq: Math.round(freq * 1000) / 10, kind: actionKind(action) }))
+      ),
+    };
+  });
+}
+
+function isRankAggregate(category: string): boolean {
+  return category.endsWith("_card_rank") || category === "turn_rank" || category === "river_rank";
+}
+
+function orderAggregateCategories(category: string, cats: CategoryStrategy[]): CategoryStrategy[] {
+  if (!isRankAggregate(category)) return cats;
+  return cats
+    .map((c, i) => ({ c, i, v: rankSortValue(c.category) }))
+    .sort((a, b) => {
+      if (a.v < 0 && b.v < 0) return a.i - b.i;
+      if (a.v < 0) return 1;
+      if (b.v < 0) return -1;
+      return a.v === b.v ? a.i - b.i : a.v - b.v;
+    })
+    .map(({ c }) => c);
 }
 
 async function fetchAggregate(brief: Brief, category: string): Promise<CategoryStrategy[] | null> {
@@ -84,24 +164,29 @@ async function fetchAggregate(brief: Brief, category: string): Promise<CategoryS
   const res = await authGet(`/loads/${brief.loadId}/strategies/hand_properties/${street}/aggregate/${category}/`);
   if (!res.ok) return null;
   const rows = (await res.json()) as AggregateRow[];
-  const cats = parseAggregate(rows);
+  const maps = await labelMaps();
+  const cats = orderAggregateCategories(category, parseAggregate(rows, maps.values[category]));
   return cats.length ? cats : null;
 }
 
 // Fetch one aggregate property's bars for a load (used by the editor's property
-// picker). Sorted strong→weak like the strategy-bars scene, capped at 9 rows.
+// picker). Rank properties use card value ascending; other properties keep API order.
 export async function fetchCategoryStrategies(
   loadId: number,
   street: string,
-  category: string
+  category: string,
+  filters: SceneFilter[] = []
 ): Promise<{ categories: CategoryStrategy[]; label: string } | null> {
   if (!config.explorerSessionSecret || !config.explorerLoginEmail) return null;
-  const res = await authGet(`/loads/${loadId}/strategies/hand_properties/${street}/aggregate/${category}/`);
+  const parts = filterQueryParts(filters, category);
+  const query = parts.length ? `?${parts.join("&")}` : "";
+  const res = await authGet(`/loads/${loadId}/strategies/hand_properties/${street}/aggregate/${category}/${query}`);
   if (!res.ok) return null;
-  const cats = parseAggregate((await res.json()) as AggregateRow[]);
+  const maps = await labelMaps();
+  const cats = orderAggregateCategories(category, parseAggregate((await res.json()) as AggregateRow[], maps.values[category]));
   if (!cats.length) return null;
-  const sorted = [...cats].sort((a, b) => aggression(b) - aggression(a)).slice(0, 9);
-  return { categories: sorted, label: prettyCategory(category) };
+  // Cap after ordering, so rank charts keep the full 2 -> Ace sequence.
+  return { categories: cats.slice(0, MAX_BARS), label: propLabel(maps, category) };
 }
 
 type WizardNode = {
@@ -135,7 +220,7 @@ function gridFromSolutions(handSolutions: Record<string, { strategy: Record<stri
 // Native preflop range matrix: walk the preflop-wizard tree along the line to the
 // LAST raiser's decision node — i.e. the range that player is opening/3-betting —
 // and bucket each combo into raise/call/fold proportions. Falls back to root.
-async function fetchPreflopRange(brief: Brief): Promise<{ grid: RangeCell[]; label?: string } | null> {
+async function fetchPreflopRange(brief: Pick<Brief, "gameId" | "preflopLine">): Promise<{ grid: RangeCell[]; label?: string } | null> {
   try {
     let gameId = brief.gameId;
     if (!gameId) {
@@ -236,6 +321,55 @@ export async function lineFromLoadId(
   }
 }
 
+export async function fetchPreflopMatrixForLoad(
+  loadId: number,
+  gameId?: string
+): Promise<{ grid: RangeCell[]; label?: string; line: string[]; gameId: string } | null> {
+  const found = await lineFromLoadId(loadId, gameId);
+  if (!found) return null;
+  const pre = await fetchPreflopRange({ preflopLine: found.line, gameId: found.gameId });
+  if (!pre) return null;
+  return { ...pre, line: found.line, gameId: found.gameId };
+}
+
+// Forward lookup: navigate the wizard tree along a display-label line and return
+// the postflop load id its closing action produces. Searches every game.
+export async function loadIdFromLine(line: string[], gameId?: string): Promise<{ loadId: number; gameId: string } | null> {
+  if (!config.explorerSessionSecret || !config.explorerLoginEmail || !line.length) return null;
+  try {
+    let gameIds: string[] = [];
+    if (gameId) gameIds = [gameId];
+    else {
+      const gamesRes = await authGet(`/games/`);
+      if (!gamesRes.ok) return null;
+      gameIds = ((await gamesRes.json()) as { id: string }[]).map((g) => g.id).filter(Boolean);
+    }
+    for (const gid of gameIds) {
+      const res = await authGet(`/preflop_wizard_strats/${gid}`);
+      if (!res.ok) continue;
+      const strategies = (await res.json()) as Record<string, WizardNode>;
+      const path: string[] = [];
+      let loadId: number | undefined;
+      let ok = true;
+      for (const label of line) {
+        const key = path.length ? path.join("-") : "0";
+        const next = strategies[key]?.solutions?.next_actions;
+        if (!next) { ok = false; break; }
+        const aid = Object.keys(next).find((k) => actionDisplayName(k) === label);
+        if (!aid) { ok = false; break; }
+        const pid = Number((next[aid] as { postflop_id?: unknown }).postflop_id);
+        if (pid) loadId = pid;
+        path.push(aid);
+      }
+      if (ok && loadId) return { loadId, gameId: gid };
+    }
+    return null;
+  } catch (e) {
+    console.warn("[solverApi] loadIdFromLine failed:", (e as Error).message);
+    return null;
+  }
+}
+
 // Pulls real solver data when configured, otherwise returns a deterministic mock.
 export async function fetchSpotData(brief: Brief): Promise<SpotData> {
   if (!config.explorerSessionSecret || !config.explorerLoginEmail || !brief.loadId) {
@@ -256,9 +390,8 @@ export async function fetchSpotData(brief: Brief): Promise<SpotData> {
   const [pre, boardCats] = await Promise.all([fetchPreflopRange(brief), fetchAggregate(brief, boardCat)]);
   spot.preflopGrid = pre?.grid ?? buildMockGrid();
   spot.preflopLabel = pre?.label;
-  spot.boardCategories = boardCats
-    ? [...boardCats].sort((a, b) => rankSortValue(b.category) - rankSortValue(a.category)).slice(0, 9)
-    : buildMockCategories();
-  spot.boardLabel = prettyCategory(boardCat);
+  // Card-rank properties were already normalized by fetchAggregate.
+  spot.boardCategories = boardCats ? boardCats.slice(0, MAX_BARS) : buildMockCategories();
+  spot.boardLabel = propLabel(await labelMaps(), boardCat);
   return spot;
 }

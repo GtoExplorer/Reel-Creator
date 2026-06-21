@@ -23,10 +23,8 @@ export const config = {
   transcribeModel: process.env.OPENAI_TRANSCRIBE_MODEL ?? "whisper-1",
   solverApiBase: process.env.SOLVER_API_BASE ?? "",
   solverApiToken: process.env.SOLVER_API_TOKEN ?? "",
-  // Live webapp capture (Playwright). Point at the local dev server's Explorer.
+  // Webapp origin for the /api/gto proxy used by solver data calls.
   explorerUrl: process.env.EXPLORER_URL ?? "http://localhost:3000/explorer",
-  flowchartSelector: process.env.FLOWCHART_SELECTOR ?? ".react-flow",
-  flowchartReadySelector: process.env.FLOWCHART_READY_SELECTOR ?? ".react-flow__node",
   explorerSessionSecret: process.env.EXPLORER_SESSION_SECRET ?? "",
   explorerLoginEmail: process.env.EXPLORER_LOGIN_EMAIL ?? "",
 };

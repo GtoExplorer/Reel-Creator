@@ -2,19 +2,18 @@ import type { DraftManifest, DraftPool, DraftScene, RenderManifest, RenderScene,
 import { hasPerNodeLines, voiceoverFromLines, timeCameraToLines } from "@/src/cameraTiming";
 
 // Build a fresh scene of any type, pulling its data from the draft's asset pool
-// so add-scene needs no re-capture. Pure + client-safe.
-export function makeScene(t: SceneType, pool?: DraftPool): DraftScene {
+// so add-scene needs no new draft generation. Pure + client-safe.
+export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number): DraftScene {
   const p = pool ?? {};
   const base: DraftScene = { type: t, headline: "", subtext: "", voiceover: "" };
   switch (t) {
     case "preflopMatrix":
-      return { ...base, rangeGrid: p.preflopGrid, headline: p.preflopLabel ?? "Preflop Range" };
+      return { ...base, loadId, rangeGrid: p.preflopGrid, headline: p.preflopLabel ?? "Preflop Range" };
     case "flowchart":
       return {
         ...base,
-        image: p.image,
-        imageW: p.imageW,
-        imageH: p.imageH,
+        loadId,
+        flowchart: p.flowchart,
         nodes: p.nodes ?? [],
         camera: [
           { cx: 0.5, cy: 0.5, zoom: 1 },
@@ -23,11 +22,11 @@ export function makeScene(t: SceneType, pool?: DraftPool): DraftScene {
         headline: "Decision Tree",
       };
     case "boardSelections":
-      return { ...base, categories: p.boardCategories ?? p.categories, category: "flop_top_card_rank", headline: p.boardLabel ?? "Board Selections" };
+      return { ...base, loadId, categories: p.boardCategories ?? p.categories, category: "flop_top_card_rank", headline: p.boardLabel ?? "Board Selections" };
     case "strategyBars":
-      return { ...base, categories: p.categories, category: "sdv", headline: "Strategy by Hand Strength" };
+      return { ...base, loadId, categories: p.categories, category: "sdv", headline: "Strategy by Hand Strength" };
     case "freqBars":
-      return { ...base, freqBars: p.freqBars, headline: p.highlightLabel ?? "Frequencies" };
+      return { ...base, loadId, freqBars: p.freqBars, headline: p.highlightLabel ?? "Frequencies" };
     case "hook":
       return { ...base, headline: "New hook" };
     case "cta":

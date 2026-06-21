@@ -4,6 +4,21 @@ type Kind = FreqBar["kind"];
 
 export const RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"];
 const RANK_VALUE: Record<string, number> = Object.fromEntries(RANKS.map((r, i) => [r, 13 - i]));
+const RANK_WORD_VALUE: Record<string, number> = {
+  ACE: 14,
+  KING: 13,
+  QUEEN: 12,
+  JACK: 11,
+  TEN: 10,
+  NINE: 9,
+  EIGHT: 8,
+  SEVEN: 7,
+  SIX: 6,
+  FIVE: 5,
+  FOUR: 4,
+  THREE: 3,
+  TWO: 2,
+};
 
 // Legend order, matching the webapp's stacked bars (aggressive -> passive).
 export const KIND_ORDER: Kind[] = ["raise", "bet", "call", "check", "fold"];
@@ -95,9 +110,14 @@ export function sortActions(actions: FreqBar[]): FreqBar[] {
   });
 }
 
-// Single-rank category labels (e.g. flop_top_card_rank) sort high -> low.
+// Single-rank category labels (e.g. flop_top_card_rank). Understands raw solver
+// ranks (A/K/Q/J/T), numbers, and human labels from property_values (Ace/Ten).
 export function rankSortValue(label: string): number {
-  return RANK_VALUE[label.trim().toUpperCase()] ?? -1;
+  const s = label.trim().toUpperCase();
+  if (RANK_VALUE[s] != null) return RANK_VALUE[s];
+  if (RANK_WORD_VALUE[s] != null) return RANK_WORD_VALUE[s];
+  const n = Number(s);
+  return Number.isFinite(n) && n >= 2 && n <= 14 ? n : -1;
 }
 
 // Grid label for cell (row i, col j): pair / suited (upper) / offsuit (lower).

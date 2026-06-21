@@ -2,7 +2,7 @@
 import type { DraftScene } from "@/src/types";
 import { CameraPathEditor } from "./CameraPathEditor";
 import { VoicePicker } from "./VoicePicker";
-import { PropertyPicker } from "./PropertyPicker";
+import { SceneDataControls } from "./SceneDataControls";
 import { BarRescriptButton } from "./BarRescriptButton";
 
 export function SceneCard({
@@ -36,6 +36,7 @@ export function SceneCard({
 }) {
   const hasCam = Array.isArray(scene.nodes);
   const isBars = scene.type === "strategyBars" || scene.type === "boardSelections";
+  const hasDataControls = isBars || scene.type === "flowchart" || scene.type === "preflopMatrix";
   return (
     <div className="rounded-xl border border-line bg-elevated p-4">
       <div className="mb-1 flex items-center justify-between">
@@ -62,14 +63,7 @@ export function SceneCard({
       <div className="label">Voiceover</div>
       <textarea className="input" value={scene.voiceover} onChange={(e) => onChange({ voiceover: e.target.value })} />
 
-      {isBars && loadId && (
-        <PropertyPicker
-          loadId={loadId}
-          street={street}
-          value={scene.category}
-          onPick={(categories, category, label) => onChange({ categories, category, headline: label })}
-        />
-      )}
+      {hasDataControls && <SceneDataControls scene={scene} defaultLoadId={loadId} street={street} onChange={onChange} />}
       {isBars && <BarRescriptButton scene={scene} topic={topic} concept={concept} onChange={onChange} />}
 
       {hasCam && <CameraPathEditor scene={scene} onChange={onChange} topic={topic} concept={concept} />}

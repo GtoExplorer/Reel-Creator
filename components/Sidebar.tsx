@@ -7,9 +7,9 @@ const DOT: Record<string, string> = {
   checking: "bg-yellow-500",
 };
 const STATUS: Record<string, string> = {
-  ok: "browser ready",
-  error: "browser error — npx playwright install chromium",
-  checking: "checking browser…",
+  ok: "solver API ready",
+  error: "solver API unavailable",
+  checking: "checking solver API...",
 };
 
 export function Sidebar({
@@ -71,7 +71,7 @@ export function Sidebar({
                   Download
                 </a>
               ) : (
-                <span className="text-xs text-muted">draft · not rendered</span>
+                <span className="text-xs text-muted">draft - not rendered</span>
               )}
             </div>
             <button
@@ -82,7 +82,7 @@ export function Sidebar({
               }}
               className="shrink-0 rounded px-1.5 py-1 text-muted opacity-0 transition hover:bg-red-500/15 hover:text-red-400 group-hover:opacity-100"
             >
-              ✕
+              x
             </button>
           </div>
         ))}

@@ -10,13 +10,14 @@ import {
   type RenderScene,
   type SceneType,
   type SpotData,
+  type FlowchartLayout,
+  type FlowNode,
 } from "../types.js";
-import { config } from "../config.js";
-import { fetchSpotData, lineFromLoadId } from "../data/solverApi.js";
+import { fetchSpotData, loadIdFromLine } from "../data/solverApi.js";
+import { buildFlowchart } from "../flowchart/build.js";
 import { generateStoryboard } from "../openai/script.js";
 import { synthesizeVoiceover } from "../openai/voiceover.js";
 import { alignCaptions } from "../openai/captions.js";
-import { captureFlowchart, preflopLineInteract } from "../capture/flowchart.js";
 import { aggression } from "../poker/ranges.js";
 import { hasPerNodeLines, voiceoverFromLines, timeCameraToLines } from "../cameraTiming.js";
 
@@ -54,7 +55,7 @@ function summariseSpot(spot: SpotData): string {
   return facts.join("\n");
 }
 
-// STAGE 1 — capture + data + script, but no voiceover/render. Returns an editable
+// STAGE 1 - solver data + script, but no voiceover/render. Returns an editable
 // draft (and writes out/<id>/draft.json).
 export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   const publicDir = publicDirOf(brief.id);
@@ -62,42 +63,33 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   fs.mkdirSync(publicDir, { recursive: true });
   fs.mkdirSync(outDir, { recursive: true });
 
-  console.log("  • Capturing live flowchart from", config.explorerUrl);
-  let flowchartImage: string | undefined;
-  let detectedLoadId: number | undefined;
-  let fcNodes: { label: string; cx: number; cy: number }[] | undefined;
-  let fcW: number | undefined;
-  let fcH: number | undefined;
-  // If a load id was given without a line, reverse-engineer the line from the
-  // preflop wizard tree so we can still drive the Explorer to that load.
-  let line = brief.preflopLine;
-  if ((!line || !line.length) && brief.loadId) {
-    const derived = await lineFromLoadId(brief.loadId, brief.gameId);
-    if (derived?.line.length) {
-      line = derived.line;
-      console.log(`  • Derived preflop line from load ${brief.loadId}: ${line.join(", ")}`);
+  // Resolve the load id (entered directly, or navigated from the preflop line),
+  // then build the decision tree natively from the API — no browser, no Explorer.
+  let loadId = brief.loadId;
+  if (!loadId && brief.preflopLine?.length) {
+    const found = await loadIdFromLine(brief.preflopLine, brief.gameId);
+    if (found) {
+      loadId = found.loadId;
+      console.log(`  • Resolved loadId ${loadId} from the line`);
     } else {
-      console.warn(`  ⚠ couldn't derive a line from load ${brief.loadId} (wrong game, or not a postflop-closing load)`);
-    }
-  }
-  {
-    const fcAbs = path.join(publicDir, "flowchart.png");
-    const interact = line?.length ? preflopLineInteract(line) : undefined;
-    const r = await captureFlowchart(fcAbs, { interact });
-    if (r.ok) {
-      flowchartImage = `reels/${brief.id}/flowchart.png`;
-      detectedLoadId = r.loadId;
-      fcNodes = r.nodes;
-      fcW = r.width;
-      fcH = r.height;
-      console.log(`    ✓ flowchart (${r.width}x${r.height})${r.loadId ? `, load ${r.loadId}` : ""}, ${r.nodes?.length ?? 0} nodes`);
-    } else {
-      console.warn(`    ⚠ flowchart capture failed (${r.reason}) — falling back to strategy chart`);
+      console.warn("  ⚠ couldn't resolve a load id from the line");
     }
   }
 
-  const loadId = brief.loadId ?? detectedLoadId;
-  if (!brief.loadId && detectedLoadId) console.log(`  • Auto-detected loadId ${detectedLoadId} from the line`);
+  console.log(`  • Building flowchart from load ${loadId ?? "(none)"}`);
+  let fcLayout: FlowchartLayout | undefined;
+  let fcNodes: FlowNode[] | undefined;
+  if (loadId) {
+    const fc = await buildFlowchart(loadId, brief.street ?? "flop", 5, [], "TB");
+    if (fc) {
+      fcLayout = fc.layout;
+      fcNodes = fc.nodes;
+      console.log(`    ✓ flowchart (${fc.layout.nodes.length} nodes, ${fc.layout.edges.length} edges)`);
+    } else {
+      console.warn("    ⚠ flowchart build failed — falling back to strategy chart");
+    }
+  }
+
   console.log("  • Fetching solver data");
   const spot = await fetchSpotData({ ...brief, loadId });
 
@@ -106,12 +98,12 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
 
   const strategyCat = brief.category ?? "sdv";
   const boardCat = brief.boardCategory ?? "flop_top_card_rank";
-  const resolve = (t: SceneType): Pick<DraftScene, "type" | "image" | "categories" | "freqBars" | "rangeGrid" | "category"> => {
+  const resolve = (t: SceneType): Pick<DraftScene, "type" | "flowchart" | "categories" | "freqBars" | "rangeGrid" | "category"> => {
     switch (t) {
       case "preflopMatrix":
         return spot.preflopGrid?.length ? { type: t, rangeGrid: spot.preflopGrid } : { type: "strategyBars", categories: spot.categories, category: strategyCat };
       case "flowchart":
-        return flowchartImage ? { type: t, image: flowchartImage } : { type: "strategyBars", categories: spot.categories, category: strategyCat };
+        return fcLayout ? { type: t, flowchart: fcLayout } : { type: "strategyBars", categories: spot.categories, category: strategyCat };
       case "boardSelections":
         return { type: t, categories: spot.boardCategories ?? spot.categories, category: boardCat };
       case "strategyBars":
@@ -127,11 +119,10 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     const r = resolve(s.type);
     const headline = r.type === "preflopMatrix" && spot.preflopLabel ? spot.preflopLabel : s.headline;
     const base: DraftScene = { ...r, headline, subtext: s.subtext, voiceover: s.voiceover };
+    if (["flowchart", "preflopMatrix", "boardSelections", "strategyBars", "freqBars"].includes(r.type)) base.loadId = loadId;
     if (r.type === "flowchart") {
       // Default camera: open on the full tree, then a gentle centred push-in.
       base.nodes = fcNodes;
-      base.imageW = fcW;
-      base.imageH = fcH;
       base.camera = [
         { cx: 0.5, cy: 0.5, zoom: 1 },
         { cx: 0.5, cy: 0.5, zoom: 1.2 },
@@ -140,12 +131,10 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     return base;
   });
 
-  // Pool of every captured/fetched asset, so the editor can add or rebuild ANY
-  // scene type without re-running capture.
+  // Pool of every fetched asset, so the editor can add or rebuild ANY scene type
+  // without re-running draft creation.
   const pool = {
-    image: flowchartImage,
-    imageW: fcW,
-    imageH: fcH,
+    flowchart: fcLayout,
     nodes: fcNodes,
     preflopGrid: spot.preflopGrid,
     preflopLabel: spot.preflopLabel,
@@ -218,10 +207,14 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       headline: e.headline ?? d.headline,
       subtext: e.subtext ?? d.subtext,
       voiceover,
+      loadId: d.loadId,
+      filters: d.filters,
+      category: d.category,
       categories: d.categories,
       freqBars: d.freqBars,
       rangeGrid: d.rangeGrid,
       image: d.image,
+      flowchart: d.flowchart,
       zoom: e.zoom ?? d.zoom,
       panY: e.panY ?? d.panY,
       nodes: d.nodes,

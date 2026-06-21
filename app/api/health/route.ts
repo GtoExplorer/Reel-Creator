@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
-import { chromium } from "playwright";
+import { authGet } from "@/src/data/solverApi";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Verifies the Playwright browser launches, so the studio can surface a clear
-// status dot instead of failing mid-capture.
+// Verifies the solver API proxy can be reached. Flowcharts now render natively
+// from API data, so the old Playwright browser health check is no longer needed.
 export async function GET() {
   try {
-    const b = await chromium.launch({ args: ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"] });
-    await b.close();
-    return NextResponse.json({ browser: "ok" });
+    const res = await authGet("/games/");
+    return NextResponse.json({ api: res.ok ? "ok" : "error", status: res.status });
   } catch (e) {
-    return NextResponse.json({ browser: "error", message: (e as Error).message.split("\n")[0] }, { status: 200 });
+    return NextResponse.json({ api: "error", message: (e as Error).message.split("\n")[0] }, { status: 200 });
   }
 }

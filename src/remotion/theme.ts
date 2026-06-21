@@ -7,10 +7,12 @@ const { fontFamily } = loadFont("normal", { weights: ["400", "600", "700", "800"
 export const theme = {
   bg: "#18191a", // --color-background
   bgGlow: "rgba(208,171,29,0.12)", // subtle gold hero glow (12% accent)
-  surface: "#242526", // --color-surface
+  surface: "#242526", // --color-surface (strategy nodes)
+  surface2: "#333443", // --color-surface-2 (split nodes)
   surfaceBorder: "#292929", // --color-line
   text: "#ededed", // --color-foreground
   muted: "#a3a3a3", // --color-muted
+  muted2: "#858585", // --color-muted-2
   accent: "#d0ab1d", // --color-accent (gold)
   accentDeep: "#e0bc2e", // --color-accent-hover
   // Matches the webapp's RangeMatrix palette (lib/poker.ts actionColor): fold

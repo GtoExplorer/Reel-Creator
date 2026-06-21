@@ -1,0 +1,3226 @@
+{
+  "briefId": "hj-vs-sb-3-bet-pot",
+  "title": "HJ vs SB: Who Owns the Flop?",
+  "hashtags": [
+    "PokerStrategy",
+    "GTOCentral",
+    "3BetPot",
+    "PokerTraining",
+    "PokerGTO",
+    "PokerSolver",
+    "PokerRange",
+    "OptimizeYourGame",
+    "BoardTexture",
+    "PokerFlop",
+    "PokerTheory"
+  ],
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Flop Ownership: The Truth",
+      "subtext": "Challenge common poker beliefs",
+      "voiceover": "Think flops are all about aggression? In a 3-bet pot, it's all about knowing when to hold back.",
+      "audioFile": "reels/hj-vs-sb-3-bet-pot/scene_0.mp3",
+      "durationSec": 6.68000020980835,
+      "words": [
+        {
+          "word": "Think",
+          "start": 0,
+          "end": 0.5400000214576721
+        },
+        {
+          "word": "flops",
+          "start": 0.7400000095367432,
+          "end": 1.0199999809265137
+        },
+        {
+          "word": "are",
+          "start": 1.0199999809265137,
+          "end": 1.2400000095367432
+        },
+        {
+          "word": "all",
+          "start": 1.2400000095367432,
+          "end": 1.440000057220459
+        },
+        {
+          "word": "about",
+          "start": 1.440000057220459,
+          "end": 1.5800000429153442
+        },
+        {
+          "word": "aggression",
+          "start": 1.5800000429153442,
+          "end": 1.9199999570846558
+        },
+        {
+          "word": "In",
+          "start": 2.700000047683716,
+          "end": 2.759999990463257
+        },
+        {
+          "word": "a",
+          "start": 2.759999990463257,
+          "end": 2.9600000381469727
+        },
+        {
+          "word": "three",
+          "start": 2.9600000381469727,
+          "end": 3.200000047683716
+        },
+        {
+          "word": "bet",
+          "start": 3.200000047683716,
+          "end": 3.319999933242798
+        },
+        {
+          "word": "pot",
+          "start": 3.319999933242798,
+          "end": 3.619999885559082
+        },
+        {
+          "word": "it's",
+          "start": 3.740000009536743,
+          "end": 4.199999809265137
+        },
+        {
+          "word": "all",
+          "start": 4.199999809265137,
+          "end": 4.400000095367432
+        },
+        {
+          "word": "about",
+          "start": 4.400000095367432,
+          "end": 4.639999866485596
+        },
+        {
+          "word": "knowing",
+          "start": 4.639999866485596,
+          "end": 4.960000038146973
+        },
+        {
+          "word": "when",
+          "start": 4.960000038146973,
+          "end": 5.239999771118164
+        },
+        {
+          "word": "to",
+          "start": 5.239999771118164,
+          "end": 5.5
+        },
+        {
+          "word": "hold",
+          "start": 5.5,
+          "end": 5.679999828338623
+        },
+        {
+          "word": "back",
+          "start": 5.679999828338623,
+          "end": 6
+        }
+      ]
+    },
+    {
+      "type": "preflopMatrix",
+      "headline": "Preflop Powerhouse",
+      "subtext": "19% hand-raising readiness",
+      "voiceover": "The Small Blind raises 19% of hands preflop, setting up for high-stakes battles. This range is stacked with premium pairs and powerful Broadway cards.",
+      "audioFile": "reels/hj-vs-sb-3-bet-pot/scene_1.mp3",
+      "durationSec": 11.530000114440918,
+      "words": [
+        {
+          "word": "The",
+          "start": 0,
+          "end": 0.3199999928474426
+        },
+        {
+          "word": "Small",
+          "start": 0.3199999928474426,
+          "end": 0.699999988079071
+        },
+        {
+          "word": "Blind",
+          "start": 0.699999988079071,
+          "end": 1.0800000429153442
+        },
+        {
+          "word": "raises",
+          "start": 1.0800000429153442,
+          "end": 1.6200000047683716
+        },
+        {
+          "word": "19",
+          "start": 1.6200000047683716,
+          "end": 2.259999990463257
+        },
+        {
+          "word": "",
+          "start": 2.259999990463257,
+          "end": 2.5799999237060547
+        },
+        {
+          "word": "of",
+          "start": 2.5799999237060547,
+          "end": 2.819999933242798
+        },
+        {
+          "word": "hands",
+          "start": 2.819999933242798,
+          "end": 3.0199999809265137
+        },
+        {
+          "word": "preflop",
+          "start": 3.0199999809265137,
+          "end": 3.5799999237060547
+        },
+        {
+          "word": "setting",
+          "start": 4.21999979019165,
+          "end": 4.21999979019165
+        },
+        {
+          "word": "up",
+          "start": 4.21999979019165,
+          "end": 4.460000038146973
+        },
+        {
+          "word": "for",
+          "start": 4.460000038146973,
+          "end": 4.71999979019165
+        },
+        {
+          "word": "high",
+          "start": 4.71999979019165,
+          "end": 4.960000038146973
+        },
+        {
+          "word": "stakes",
+          "start": 4.960000038146973,
+          "end": 5.179999828338623
+        },
+        {
+          "word": "battles",
+          "start": 5.179999828338623,
+          "end": 5.599999904632568
+        },
+        {
+          "word": "This",
+          "start": 6.679999828338623,
+          "end": 6.800000190734863
+        },
+        {
+          "word": "range",
+          "start": 6.800000190734863,
+          "end": 7.059999942779541
+        },
+        {
+          "word": "is",
+          "start": 7.059999942779541,
+          "end": 7.579999923706055
+        },
+        {
+          "word": "stacked",
+          "start": 7.579999923706055,
+          "end": 7.579999923706055
+        },
+        {
+          "word": "with",
+          "start": 7.579999923706055,
+          "end": 8.079999923706055
+        },
+        {
+          "word": "premium",
+          "start": 8.079999923706055,
+          "end": 8.4399995803833
+        },
+        {
+          "word": "pairs",
+          "start": 8.4399995803833,
+          "end": 8.819999694824219
+        },
+        {
+          "word": "and",
+          "start": 8.819999694824219,
+          "end": 9.319999694824219
+        },
+        {
+          "word": "powerful",
+          "start": 9.319999694824219,
+          "end": 9.760000228881836
+        },
+        {
+          "word": "Broadway",
+          "start": 9.760000228881836,
+          "end": 10.239999771118164
+        },
+        {
+          "word": "cards",
+          "start": 10.239999771118164,
+          "end": 10.5600004196167
+        }
+      ],
+      "loadId": 64437,
+      "rangeGrid": [
+        {
+          "combo": "AA",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "AKs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "AQs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "AJs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "ATs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "A9s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "A8s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "A7s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "A6s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "A5s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "A4s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "A3s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "A2s",
+          "raise": 0.16,
+          "call": 0,
+          "fold": 0.84
+        },
+        {
+          "combo": "AKo",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "KK",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "KQs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "KJs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "KTs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "K9s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "K8s",
+          "raise": 0.89,
+          "call": 0,
+          "fold": 0.10999999999999999
+        },
+        {
+          "combo": "K7s",
+          "raise": 0.805,
+          "call": 0,
+          "fold": 0.19499999999999995
+        },
+        {
+          "combo": "K6s",
+          "raise": 0.565,
+          "call": 0,
+          "fold": 0.43500000000000005
+        },
+        {
+          "combo": "K5s",
+          "raise": 0.17,
+          "call": 0,
+          "fold": 0.83
+        },
+        {
+          "combo": "K4s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K3s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K2s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "AQo",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "KQo",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "QQ",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "QJs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "QTs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "Q9s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "Q8s",
+          "raise": 0.105,
+          "call": 0,
+          "fold": 0.895
+        },
+        {
+          "combo": "Q7s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q6s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q5s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q4s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q3s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q2s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "AJo",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "KJo",
+          "raise": 0.735,
+          "call": 0,
+          "fold": 0.265
+        },
+        {
+          "combo": "QJo",
+          "raise": 0.48,
+          "call": 0,
+          "fold": 0.52
+        },
+        {
+          "combo": "JJ",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "JTs",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "J9s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "J8s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J7s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J6s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J5s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J4s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J3s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J2s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "ATo",
+          "raise": 0.96,
+          "call": 0,
+          "fold": 0.040000000000000036
+        },
+        {
+          "combo": "KTo",
+          "raise": 0.025000000000000005,
+          "call": 0,
+          "fold": 0.975
+        },
+        {
+          "combo": "QTo",
+          "raise": 0.08,
+          "call": 0,
+          "fold": 0.92
+        },
+        {
+          "combo": "JTo",
+          "raise": 0.045000000000000005,
+          "call": 0,
+          "fold": 0.955
+        },
+        {
+          "combo": "TT",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "T9s",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "T8s",
+          "raise": 0.755,
+          "call": 0,
+          "fold": 0.245
+        },
+        {
+          "combo": "T7s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T6s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T5s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T4s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T3s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T2s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "A9o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K9o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q9o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J9o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T9o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "99",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "98s",
+          "raise": 0.77,
+          "call": 0,
+          "fold": 0.22999999999999998
+        },
+        {
+          "combo": "97s",
+          "raise": 0.025,
+          "call": 0,
+          "fold": 0.975
+        },
+        {
+          "combo": "96s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "95s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "94s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "93s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "92s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "A8o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K8o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q8o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J8o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T8o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "98o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "88",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "87s",
+          "raise": 0.315,
+          "call": 0,
+          "fold": 0.685
+        },
+        {
+          "combo": "86s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "85s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "84s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "83s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "82s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "A7o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K7o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q7o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J7o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T7o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "97o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "87o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "77",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "76s",
+          "raise": 0.295,
+          "call": 0,
+          "fold": 0.7050000000000001
+        },
+        {
+          "combo": "75s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "74s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "73s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "72s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "A6o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K6o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q6o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J6o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T6o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "96o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "86o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "76o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "66",
+          "raise": 1,
+          "call": 0,
+          "fold": 0
+        },
+        {
+          "combo": "65s",
+          "raise": 0.365,
+          "call": 0,
+          "fold": 0.635
+        },
+        {
+          "combo": "64s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "63s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "62s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "A5o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K5o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q5o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J5o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T5o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "95o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "85o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "75o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "65o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "55",
+          "raise": 0.86,
+          "call": 0,
+          "fold": 0.14
+        },
+        {
+          "combo": "54s",
+          "raise": 0.205,
+          "call": 0,
+          "fold": 0.795
+        },
+        {
+          "combo": "53s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "52s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "A4o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K4o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q4o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J4o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T4o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "94o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "84o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "74o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "64o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "54o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "44",
+          "raise": 0.295,
+          "call": 0,
+          "fold": 0.7050000000000001
+        },
+        {
+          "combo": "43s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "42s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "A3o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K3o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q3o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J3o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T3o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "93o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "83o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "73o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "63o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "53o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "43o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "33",
+          "raise": 0.26,
+          "call": 0,
+          "fold": 0.74
+        },
+        {
+          "combo": "32s",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "A2o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "K2o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "Q2o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "J2o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "T2o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "92o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "82o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "72o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "62o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "52o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "42o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "32o",
+          "raise": 0,
+          "call": 0,
+          "fold": 1
+        },
+        {
+          "combo": "22",
+          "raise": 0.305,
+          "call": 0,
+          "fold": 0.6950000000000001
+        }
+      ]
+    },
+    {
+      "type": "flowchart",
+      "headline": "Optimal Decision Tree",
+      "subtext": "Navigate each betting street smartly",
+      "voiceover": "In this 3-bet pot, flops decide control between strength and caution. When the top card is ill-fitted, checking emerges at 35% frequency. With flops low, like a Jack or under, it's a pivotal decision node. On low wet boards, checks spike to a cautious 44% among small bets. When the flop goes monotone, it's another decisive node moment. A monotone board shows us balance: small bets blend with a 45% check.",
+      "audioFile": "reels/hj-vs-sb-3-bet-pot/scene_2.mp3",
+      "durationSec": 28.039999389648436,
+      "words": [
+        {
+          "word": "In",
+          "start": 0,
+          "end": 0.2199999988079071
+        },
+        {
+          "word": "this",
+          "start": 0.2199999988079071,
+          "end": 0.5
+        },
+        {
+          "word": "3",
+          "start": 0.5,
+          "end": 0.8999999761581421
+        },
+        {
+          "word": "bet",
+          "start": 0.8999999761581421,
+          "end": 0.9200000166893005
+        },
+        {
+          "word": "pot",
+          "start": 0.9200000166893005,
+          "end": 1.2799999713897705
+        },
+        {
+          "word": "flops",
+          "start": 2,
+          "end": 2
+        },
+        {
+          "word": "decide",
+          "start": 2,
+          "end": 2.4200000762939453
+        },
+        {
+          "word": "control",
+          "start": 2.4200000762939453,
+          "end": 2.9200000762939453
+        },
+        {
+          "word": "between",
+          "start": 2.9200000762939453,
+          "end": 3.4000000953674316
+        },
+        {
+          "word": "strength",
+          "start": 3.4000000953674316,
+          "end": 3.759999990463257
+        },
+        {
+          "word": "and",
+          "start": 3.759999990463257,
+          "end": 4.019999980926514
+        },
+        {
+          "word": "caution",
+          "start": 4.019999980926514,
+          "end": 4.320000171661377
+        },
+        {
+          "word": "When",
+          "start": 4.980000019073486,
+          "end": 5.059999942779541
+        },
+        {
+          "word": "the",
+          "start": 5.059999942779541,
+          "end": 5.239999771118164
+        },
+        {
+          "word": "top",
+          "start": 5.239999771118164,
+          "end": 5.440000057220459
+        },
+        {
+          "word": "card",
+          "start": 5.440000057220459,
+          "end": 5.679999828338623
+        },
+        {
+          "word": "is",
+          "start": 5.679999828338623,
+          "end": 5.880000114440918
+        },
+        {
+          "word": "ill",
+          "start": 5.880000114440918,
+          "end": 6.239999771118164
+        },
+        {
+          "word": "fitted",
+          "start": 6.239999771118164,
+          "end": 6.300000190734863
+        },
+        {
+          "word": "checking",
+          "start": 7.039999961853027,
+          "end": 7.059999942779541
+        },
+        {
+          "word": "emerges",
+          "start": 7.059999942779541,
+          "end": 7.440000057220459
+        },
+        {
+          "word": "at",
+          "start": 7.440000057220459,
+          "end": 7.739999771118164
+        },
+        {
+          "word": "35",
+          "start": 7.739999771118164,
+          "end": 8.239999771118164
+        },
+        {
+          "word": "",
+          "start": 8.239999771118164,
+          "end": 8.579999923706055
+        },
+        {
+          "word": "frequency",
+          "start": 8.579999923706055,
+          "end": 9
+        },
+        {
+          "word": "With",
+          "start": 9.680000305175781,
+          "end": 9.960000038146973
+        },
+        {
+          "word": "flops",
+          "start": 9.960000038146973,
+          "end": 10.199999809265137
+        },
+        {
+          "word": "low",
+          "start": 10.199999809265137,
+          "end": 10.5600004196167
+        },
+        {
+          "word": "like",
+          "start": 10.779999732971191,
+          "end": 10.9399995803833
+        },
+        {
+          "word": "a",
+          "start": 10.9399995803833,
+          "end": 11.300000190734863
+        },
+        {
+          "word": "jack",
+          "start": 11.300000190734863,
+          "end": 11.300000190734863
+        },
+        {
+          "word": "or",
+          "start": 11.300000190734863,
+          "end": 11.520000457763672
+        },
+        {
+          "word": "under",
+          "start": 11.520000457763672,
+          "end": 11.65999984741211
+        },
+        {
+          "word": "it's",
+          "start": 12.119999885559082,
+          "end": 12.279999732971191
+        },
+        {
+          "word": "a",
+          "start": 12.279999732971191,
+          "end": 12.520000457763672
+        },
+        {
+          "word": "pivotal",
+          "start": 12.520000457763672,
+          "end": 12.739999771118164
+        },
+        {
+          "word": "decision",
+          "start": 12.739999771118164,
+          "end": 13.15999984741211
+        },
+        {
+          "word": "node",
+          "start": 13.15999984741211,
+          "end": 13.359999656677246
+        },
+        {
+          "word": "On",
+          "start": 13.800000190734863,
+          "end": 14.100000381469727
+        },
+        {
+          "word": "low",
+          "start": 14.100000381469727,
+          "end": 14.319999694824219
+        },
+        {
+          "word": "wet",
+          "start": 14.319999694824219,
+          "end": 14.520000457763672
+        },
+        {
+          "word": "boards",
+          "start": 14.520000457763672,
+          "end": 14.84000015258789
+        },
+        {
+          "word": "checks",
+          "start": 15.4399995803833,
+          "end": 15.460000038146973
+        },
+        {
+          "word": "spike",
+          "start": 15.460000038146973,
+          "end": 15.720000267028809
+        },
+        {
+          "word": "to",
+          "start": 15.720000267028809,
+          "end": 15.899999618530273
+        },
+        {
+          "word": "a",
+          "start": 15.899999618530273,
+          "end": 16.34000015258789
+        },
+        {
+          "word": "cautious",
+          "start": 16.34000015258789,
+          "end": 16.34000015258789
+        },
+        {
+          "word": "44",
+          "start": 16.34000015258789,
+          "end": 16.860000610351562
+        },
+        {
+          "word": "",
+          "start": 16.860000610351562,
+          "end": 17.299999237060547
+        },
+        {
+          "word": "among",
+          "start": 17.299999237060547,
+          "end": 17.739999771118164
+        },
+        {
+          "word": "small",
+          "start": 17.739999771118164,
+          "end": 18.059999465942383
+        },
+        {
+          "word": "bets",
+          "start": 18.059999465942383,
+          "end": 18.219999313354492
+        },
+        {
+          "word": "When",
+          "start": 18.8799991607666,
+          "end": 19.100000381469727
+        },
+        {
+          "word": "the",
+          "start": 19.100000381469727,
+          "end": 19.3799991607666
+        },
+        {
+          "word": "flop",
+          "start": 19.3799991607666,
+          "end": 19.3799991607666
+        },
+        {
+          "word": "goes",
+          "start": 19.3799991607666,
+          "end": 19.639999389648438
+        },
+        {
+          "word": "monotone",
+          "start": 19.639999389648438,
+          "end": 20.079999923706055
+        },
+        {
+          "word": "it's",
+          "start": 20.459999084472656,
+          "end": 20.700000762939453
+        },
+        {
+          "word": "another",
+          "start": 20.700000762939453,
+          "end": 20.940000534057617
+        },
+        {
+          "word": "decisive",
+          "start": 20.940000534057617,
+          "end": 21.479999542236328
+        },
+        {
+          "word": "node",
+          "start": 21.479999542236328,
+          "end": 21.719999313354492
+        },
+        {
+          "word": "moment",
+          "start": 21.719999313354492,
+          "end": 22.020000457763672
+        },
+        {
+          "word": "A",
+          "start": 22.34000015258789,
+          "end": 22.799999237060547
+        },
+        {
+          "word": "monotone",
+          "start": 22.799999237060547,
+          "end": 23.139999389648438
+        },
+        {
+          "word": "board",
+          "start": 23.139999389648438,
+          "end": 23.440000534057617
+        },
+        {
+          "word": "shows",
+          "start": 23.440000534057617,
+          "end": 23.719999313354492
+        },
+        {
+          "word": "us",
+          "start": 23.719999313354492,
+          "end": 23.959999084472656
+        },
+        {
+          "word": "balance",
+          "start": 23.959999084472656,
+          "end": 24.280000686645508
+        },
+        {
+          "word": "Small",
+          "start": 24.860000610351562,
+          "end": 25.100000381469727
+        },
+        {
+          "word": "bets",
+          "start": 25.100000381469727,
+          "end": 25.280000686645508
+        },
+        {
+          "word": "blend",
+          "start": 25.280000686645508,
+          "end": 25.6200008392334
+        },
+        {
+          "word": "with",
+          "start": 25.6200008392334,
+          "end": 26.040000915527344
+        },
+        {
+          "word": "a",
+          "start": 26.040000915527344,
+          "end": 26.239999771118164
+        },
+        {
+          "word": "45",
+          "start": 26.239999771118164,
+          "end": 26.68000030517578
+        },
+        {
+          "word": "",
+          "start": 26.68000030517578,
+          "end": 27.020000457763672
+        },
+        {
+          "word": "check",
+          "start": 27.020000457763672,
+          "end": 27.31999969482422
+        }
+      ],
+      "loadId": 64437,
+      "flowchart": {
+        "direction": "LR",
+        "width": 1860,
+        "height": 1753,
+        "nodes": [
+          {
+            "id": "0",
+            "x": 80,
+            "y": 506,
+            "w": 300,
+            "h": 118,
+            "kind": "split",
+            "label": "Flop: Top Card",
+            "predictions": [
+              {
+                "action": "Bet Allin (429%)",
+                "freq": 0,
+                "kind": "raise"
+              },
+              {
+                "action": "Bet 100%",
+                "freq": 1.7,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 75%",
+                "freq": 16,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 50%",
+                "freq": 18.8,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 25%",
+                "freq": 16.1,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 10%",
+                "freq": 12,
+                "kind": "bet"
+              },
+              {
+                "action": "Check",
+                "freq": 35.4,
+                "kind": "check"
+              }
+            ]
+          },
+          {
+            "id": "1",
+            "x": 780,
+            "y": 1302,
+            "w": 300,
+            "h": 118,
+            "kind": "split",
+            "label": "Flop: Suit",
+            "edge": "Jack or lower",
+            "predictions": [
+              {
+                "action": "Bet Allin (429%)",
+                "freq": 0,
+                "kind": "raise"
+              },
+              {
+                "action": "Bet 100%",
+                "freq": 2.7,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 75%",
+                "freq": 25.3,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 50%",
+                "freq": 19,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 25%",
+                "freq": 5.2,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 10%",
+                "freq": 3.9,
+                "kind": "bet"
+              },
+              {
+                "action": "Check",
+                "freq": 44,
+                "kind": "check"
+              }
+            ]
+          },
+          {
+            "id": "2",
+            "x": 1480,
+            "y": 1433,
+            "w": 300,
+            "h": 240,
+            "kind": "strategy",
+            "label": "Strategy",
+            "edge": "Monotone",
+            "predictions": [
+              {
+                "action": "Bet Allin (429%)",
+                "freq": 0,
+                "kind": "raise"
+              },
+              {
+                "action": "Bet 100%",
+                "freq": 0,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 75%",
+                "freq": 0.3,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 50%",
+                "freq": 10.1,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 25%",
+                "freq": 22,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 10%",
+                "freq": 23,
+                "kind": "bet"
+              },
+              {
+                "action": "Check",
+                "freq": 44.6,
+                "kind": "check"
+              }
+            ]
+          },
+          {
+            "id": "3",
+            "x": 1480,
+            "y": 1035,
+            "w": 300,
+            "h": 268,
+            "kind": "strategy",
+            "label": "Strategy",
+            "edge": "Flush Draw or Rainbow",
+            "predictions": [
+              {
+                "action": "Bet Allin (429%)",
+                "freq": 0,
+                "kind": "raise"
+              },
+              {
+                "action": "Bet 100%",
+                "freq": 3.2,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 75%",
+                "freq": 29.7,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 50%",
+                "freq": 20.6,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 25%",
+                "freq": 2.2,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 10%",
+                "freq": 0.4,
+                "kind": "bet"
+              },
+              {
+                "action": "Check",
+                "freq": 43.8,
+                "kind": "check"
+              }
+            ]
+          },
+          {
+            "id": "4",
+            "x": 780,
+            "y": 506,
+            "w": 300,
+            "h": 118,
+            "kind": "split",
+            "label": "Flop: Suit",
+            "edge": "King - Queen",
+            "predictions": [
+              {
+                "action": "Bet Allin (429%)",
+                "freq": 0,
+                "kind": "raise"
+              },
+              {
+                "action": "Bet 100%",
+                "freq": 0.7,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 75%",
+                "freq": 8.6,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 50%",
+                "freq": 24.7,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 25%",
+                "freq": 29.7,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 10%",
+                "freq": 13.5,
+                "kind": "bet"
+              },
+              {
+                "action": "Check",
+                "freq": 22.9,
+                "kind": "check"
+              }
+            ]
+          },
+          {
+            "id": "7",
+            "x": 780,
+            "y": 80,
+            "w": 300,
+            "h": 296,
+            "kind": "strategy",
+            "label": "Strategy",
+            "edge": "Ace or higher",
+            "predictions": [
+              {
+                "action": "Bet Allin (429%)",
+                "freq": 0,
+                "kind": "raise"
+              },
+              {
+                "action": "Bet 100%",
+                "freq": 0.9,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 75%",
+                "freq": 3.7,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 50%",
+                "freq": 8,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 25%",
+                "freq": 22.3,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 10%",
+                "freq": 31.4,
+                "kind": "bet"
+              },
+              {
+                "action": "Check",
+                "freq": 33.7,
+                "kind": "check"
+              }
+            ]
+          },
+          {
+            "id": "5",
+            "x": 1480,
+            "y": 637,
+            "w": 300,
+            "h": 268,
+            "kind": "strategy",
+            "label": "Strategy",
+            "edge": "Monotone",
+            "predictions": [
+              {
+                "action": "Bet Allin (429%)",
+                "freq": 0,
+                "kind": "raise"
+              },
+              {
+                "action": "Bet 100%",
+                "freq": 0.1,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 75%",
+                "freq": 0.8,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 50%",
+                "freq": 6.6,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 25%",
+                "freq": 19.6,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 10%",
+                "freq": 33.9,
+                "kind": "bet"
+              },
+              {
+                "action": "Check",
+                "freq": 39,
+                "kind": "check"
+              }
+            ]
+          },
+          {
+            "id": "6",
+            "x": 1480,
+            "y": 211,
+            "w": 300,
+            "h": 296,
+            "kind": "strategy",
+            "label": "Strategy",
+            "edge": "Flush Draw or Rainbow",
+            "predictions": [
+              {
+                "action": "Bet Allin (429%)",
+                "freq": 0,
+                "kind": "raise"
+              },
+              {
+                "action": "Bet 100%",
+                "freq": 0.8,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 75%",
+                "freq": 10.2,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 50%",
+                "freq": 28.5,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 25%",
+                "freq": 31.8,
+                "kind": "bet"
+              },
+              {
+                "action": "Bet 10%",
+                "freq": 9.2,
+                "kind": "bet"
+              },
+              {
+                "action": "Check",
+                "freq": 19.5,
+                "kind": "check"
+              }
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "id": "edge-0-7",
+            "source": "0",
+            "target": "7",
+            "points": [
+              {
+                "x": 380,
+                "y": 565
+              },
+              {
+                "x": 580,
+                "y": 565
+              },
+              {
+                "x": 580,
+                "y": 228
+              },
+              {
+                "x": 780,
+                "y": 228
+              }
+            ],
+            "label": "Ace or higher",
+            "labelX": 675,
+            "labelY": 228
+          },
+          {
+            "id": "edge-0-4",
+            "source": "0",
+            "target": "4",
+            "points": [
+              {
+                "x": 380,
+                "y": 565
+              },
+              {
+                "x": 580,
+                "y": 565
+              },
+              {
+                "x": 580,
+                "y": 565
+              },
+              {
+                "x": 780,
+                "y": 565
+              }
+            ],
+            "label": "King - Queen",
+            "labelX": 675,
+            "labelY": 565
+          },
+          {
+            "id": "edge-0-1",
+            "source": "0",
+            "target": "1",
+            "points": [
+              {
+                "x": 380,
+                "y": 565
+              },
+              {
+                "x": 580,
+                "y": 565
+              },
+              {
+                "x": 580,
+                "y": 1361
+              },
+              {
+                "x": 780,
+                "y": 1361
+              }
+            ],
+            "label": "Jack or lower",
+            "labelX": 675,
+            "labelY": 1361
+          },
+          {
+            "id": "edge-1-3",
+            "source": "1",
+            "target": "3",
+            "points": [
+              {
+                "x": 1080,
+                "y": 1361
+              },
+              {
+                "x": 1280,
+                "y": 1361
+              },
+              {
+                "x": 1280,
+                "y": 1169
+              },
+              {
+                "x": 1480,
+                "y": 1169
+              }
+            ],
+            "label": "Flush Draw or Rainbow",
+            "labelX": 1375,
+            "labelY": 1169
+          },
+          {
+            "id": "edge-1-2",
+            "source": "1",
+            "target": "2",
+            "points": [
+              {
+                "x": 1080,
+                "y": 1361
+              },
+              {
+                "x": 1280,
+                "y": 1361
+              },
+              {
+                "x": 1280,
+                "y": 1553
+              },
+              {
+                "x": 1480,
+                "y": 1553
+              }
+            ],
+            "label": "Monotone",
+            "labelX": 1375,
+            "labelY": 1553
+          },
+          {
+            "id": "edge-4-6",
+            "source": "4",
+            "target": "6",
+            "points": [
+              {
+                "x": 1080,
+                "y": 565
+              },
+              {
+                "x": 1280,
+                "y": 565
+              },
+              {
+                "x": 1280,
+                "y": 359
+              },
+              {
+                "x": 1480,
+                "y": 359
+              }
+            ],
+            "label": "Flush Draw or Rainbow",
+            "labelX": 1375,
+            "labelY": 359
+          },
+          {
+            "id": "edge-4-5",
+            "source": "4",
+            "target": "5",
+            "points": [
+              {
+                "x": 1080,
+                "y": 565
+              },
+              {
+                "x": 1280,
+                "y": 565
+              },
+              {
+                "x": 1280,
+                "y": 771
+              },
+              {
+                "x": 1480,
+                "y": 771
+              }
+            ],
+            "label": "Monotone",
+            "labelX": 1375,
+            "labelY": 771
+          }
+        ]
+      },
+      "nodes": [
+        {
+          "id": "0",
+          "label": "Flop: Top Card",
+          "cx": 0.1237,
+          "cy": 0.3223,
+          "summary": "Bet Allin (429%) 0%, Bet 100% 2%, Bet 75% 16%, Bet 50% 19%, Bet 25% 16%, Bet 10% 12%, Check 35%",
+          "kind": "split"
+        },
+        {
+          "id": "1",
+          "label": "Flop: Suit",
+          "cx": 0.5,
+          "cy": 0.7764,
+          "summary": "Bet Allin (429%) 0%, Bet 100% 3%, Bet 75% 25%, Bet 50% 19%, Bet 25% 5%, Bet 10% 4%, Check 44%",
+          "kind": "split",
+          "edge": "Jack or lower"
+        },
+        {
+          "id": "2",
+          "label": "Strategy · Bet 50% 10%, Bet 25% 22%, Bet 10% 23%, C",
+          "cx": 0.8763,
+          "cy": 0.8859,
+          "summary": "Bet Allin (429%) 0%, Bet 100% 0%, Bet 75% 0%, Bet 50% 10%, Bet 25% 22%, Bet 10% 23%, Check 45%",
+          "kind": "strategy",
+          "edge": "Monotone"
+        },
+        {
+          "id": "3",
+          "label": "Strategy · Bet 100% 3%, Bet 75% 30%, Bet 50% 21%, B",
+          "cx": 0.8763,
+          "cy": 0.6669,
+          "summary": "Bet Allin (429%) 0%, Bet 100% 3%, Bet 75% 30%, Bet 50% 21%, Bet 25% 2%, Bet 10% 0%, Check 44%",
+          "kind": "strategy",
+          "edge": "Flush Draw or Rainbow"
+        },
+        {
+          "id": "4",
+          "label": "Flop: Suit",
+          "cx": 0.5,
+          "cy": 0.3223,
+          "summary": "Bet Allin (429%) 0%, Bet 100% 1%, Bet 75% 9%, Bet 50% 25%, Bet 25% 30%, Bet 10% 14%, Check 23%",
+          "kind": "split",
+          "edge": "King - Queen"
+        },
+        {
+          "id": "7",
+          "label": "Strategy · Bet 100% 1%, Bet 75% 4%, Bet 50% 8%, Bet",
+          "cx": 0.5,
+          "cy": 0.1301,
+          "summary": "Bet Allin (429%) 0%, Bet 100% 1%, Bet 75% 4%, Bet 50% 8%, Bet 25% 22%, Bet 10% 31%, Check 34%",
+          "kind": "strategy",
+          "edge": "Ace or higher"
+        },
+        {
+          "id": "5",
+          "label": "Strategy · Bet 75% 1%, Bet 50% 7%, Bet 25% 20%, Bet",
+          "cx": 0.8763,
+          "cy": 0.4398,
+          "summary": "Bet Allin (429%) 0%, Bet 100% 0%, Bet 75% 1%, Bet 50% 7%, Bet 25% 20%, Bet 10% 34%, Check 39%",
+          "kind": "strategy",
+          "edge": "Monotone"
+        },
+        {
+          "id": "6",
+          "label": "Strategy · Bet 100% 1%, Bet 75% 10%, Bet 50% 29%, B",
+          "cx": 0.8763,
+          "cy": 0.2048,
+          "summary": "Bet Allin (429%) 0%, Bet 100% 1%, Bet 75% 10%, Bet 50% 29%, Bet 25% 32%, Bet 10% 9%, Check 20%",
+          "kind": "strategy",
+          "edge": "Flush Draw or Rainbow"
+        },
+        {
+          "id": "edge-0-7",
+          "label": "Ace or higher",
+          "cx": 0.3629,
+          "cy": 0.1301,
+          "summary": "Decision branch: Ace or higher",
+          "kind": "edge",
+          "edge": "Ace or higher",
+          "source": "0",
+          "target": "7"
+        },
+        {
+          "id": "edge-0-4",
+          "label": "King - Queen",
+          "cx": 0.3629,
+          "cy": 0.3223,
+          "summary": "Decision branch: King - Queen",
+          "kind": "edge",
+          "edge": "King - Queen",
+          "source": "0",
+          "target": "4"
+        },
+        {
+          "id": "edge-0-1",
+          "label": "Jack or lower",
+          "cx": 0.3629,
+          "cy": 0.7764,
+          "summary": "Decision branch: Jack or lower",
+          "kind": "edge",
+          "edge": "Jack or lower",
+          "source": "0",
+          "target": "1"
+        },
+        {
+          "id": "edge-1-3",
+          "label": "Flush Draw or Rainbow",
+          "cx": 0.7392,
+          "cy": 0.6669,
+          "summary": "Decision branch: Flush Draw or Rainbow",
+          "kind": "edge",
+          "edge": "Flush Draw or Rainbow",
+          "source": "1",
+          "target": "3"
+        },
+        {
+          "id": "edge-1-2",
+          "label": "Monotone",
+          "cx": 0.7392,
+          "cy": 0.8859,
+          "summary": "Decision branch: Monotone",
+          "kind": "edge",
+          "edge": "Monotone",
+          "source": "1",
+          "target": "2"
+        },
+        {
+          "id": "edge-4-6",
+          "label": "Flush Draw or Rainbow",
+          "cx": 0.7392,
+          "cy": 0.2048,
+          "summary": "Decision branch: Flush Draw or Rainbow",
+          "kind": "edge",
+          "edge": "Flush Draw or Rainbow",
+          "source": "4",
+          "target": "6"
+        },
+        {
+          "id": "edge-4-5",
+          "label": "Monotone",
+          "cx": 0.7392,
+          "cy": 0.4398,
+          "summary": "Decision branch: Monotone",
+          "kind": "edge",
+          "edge": "Monotone",
+          "source": "4",
+          "target": "5"
+        }
+      ],
+      "camera": [
+        {
+          "cx": 0.5,
+          "cy": 0.5,
+          "zoom": 1,
+          "line": "In this 3-bet pot, flops decide control between strength and caution.",
+          "atSec": 0
+        },
+        {
+          "cx": 0.1237,
+          "cy": 0.3223,
+          "zoom": 3,
+          "line": "When the top card is ill-fitted, checking emerges at 35% frequency.",
+          "atSec": 4.344225257551166
+        },
+        {
+          "cx": 0.3629,
+          "cy": 0.7764,
+          "zoom": 3,
+          "line": "With flops low, like a Jack or under, it's a pivotal decision node.",
+          "atSec": 8.688450515102332
+        },
+        {
+          "cx": 0.5,
+          "cy": 0.7764,
+          "zoom": 3,
+          "line": "On low wet boards, checks spike to a cautious 44% among small bets.",
+          "atSec": 13.822534910390074
+        },
+        {
+          "cx": 0.7392,
+          "cy": 0.8859,
+          "zoom": 3,
+          "line": "When the flop goes monotone, it's another decisive node moment.",
+          "atSec": 18.956619305677815
+        },
+        {
+          "cx": 0.8763,
+          "cy": 0.8859,
+          "zoom": 3,
+          "line": "A monotone board shows us balance: small bets blend with a 45% check.",
+          "atSec": 22.905914994360696
+        }
+      ]
+    },
+    {
+      "type": "boardSelections",
+      "headline": "Board Texture Mastery",
+      "subtext": "Queen vs. Deuce: Game-changers",
+      "voiceover": "On Queen-high boards, the Small Blind seizes 78% aggressive action, while a deuce demands caution at just 51%. Understanding these board textures is your key edge.",
+      "audioFile": "reels/hj-vs-sb-3-bet-pot/scene_3.mp3",
+      "durationSec": 11.750000381469727,
+      "words": [
+        {
+          "word": "On",
+          "start": 0,
+          "end": 0.3400000035762787
+        },
+        {
+          "word": "queen",
+          "start": 0.3400000035762787,
+          "end": 0.699999988079071
+        },
+        {
+          "word": "high",
+          "start": 0.699999988079071,
+          "end": 1
+        },
+        {
+          "word": "boards",
+          "start": 1,
+          "end": 1.2999999523162842
+        },
+        {
+          "word": "the",
+          "start": 1.7200000286102295,
+          "end": 1.8799999952316284
+        },
+        {
+          "word": "Small",
+          "start": 1.8799999952316284,
+          "end": 2.180000066757202
+        },
+        {
+          "word": "Blind",
+          "start": 2.180000066757202,
+          "end": 2.4000000953674316
+        },
+        {
+          "word": "seizes",
+          "start": 2.4000000953674316,
+          "end": 2.759999990463257
+        },
+        {
+          "word": "78",
+          "start": 2.759999990463257,
+          "end": 3.380000114440918
+        },
+        {
+          "word": "",
+          "start": 3.380000114440918,
+          "end": 3.759999990463257
+        },
+        {
+          "word": "aggressive",
+          "start": 3.759999990463257,
+          "end": 4.119999885559082
+        },
+        {
+          "word": "action",
+          "start": 4.119999885559082,
+          "end": 4.440000057220459
+        },
+        {
+          "word": "while",
+          "start": 4.960000038146973,
+          "end": 5.059999942779541
+        },
+        {
+          "word": "a",
+          "start": 5.059999942779541,
+          "end": 5.300000190734863
+        },
+        {
+          "word": "deuce",
+          "start": 5.300000190734863,
+          "end": 5.440000057220459
+        },
+        {
+          "word": "demands",
+          "start": 5.440000057220459,
+          "end": 5.78000020980835
+        },
+        {
+          "word": "caution",
+          "start": 5.78000020980835,
+          "end": 6.139999866485596
+        },
+        {
+          "word": "at",
+          "start": 6.139999866485596,
+          "end": 6.579999923706055
+        },
+        {
+          "word": "just",
+          "start": 6.579999923706055,
+          "end": 6.880000114440918
+        },
+        {
+          "word": "51",
+          "start": 6.880000114440918,
+          "end": 8.260000228881836
+        },
+        {
+          "word": "Understanding",
+          "start": 8.260000228881836,
+          "end": 8.800000190734863
+        },
+        {
+          "word": "these",
+          "start": 8.800000190734863,
+          "end": 9.140000343322754
+        },
+        {
+          "word": "board",
+          "start": 9.140000343322754,
+          "end": 9.319999694824219
+        },
+        {
+          "word": "textures",
+          "start": 9.319999694824219,
+          "end": 9.65999984741211
+        },
+        {
+          "word": "is",
+          "start": 9.65999984741211,
+          "end": 10.140000343322754
+        },
+        {
+          "word": "your",
+          "start": 10.140000343322754,
+          "end": 10.359999656677246
+        },
+        {
+          "word": "key",
+          "start": 10.359999656677246,
+          "end": 10.619999885559082
+        },
+        {
+          "word": "edge",
+          "start": 10.619999885559082,
+          "end": 10.960000038146973
+        }
+      ],
+      "loadId": 64437,
+      "category": "flop_top_card_rank",
+      "categories": [
+        {
+          "category": "2",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 0.8,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 36.6,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 11.9,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 0.8,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 0.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 49.2,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "3",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 4.5,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 43.9,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 6.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 0.8,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 0.6,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 44,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "4",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 3.9,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 37.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 15.5,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 2.4,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 2.5,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 38,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "5",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 2.9,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 38.5,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 16.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 3.6,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 2.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 36,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "6",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 4.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 34.2,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 11.4,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 3.5,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 3.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 43,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "7",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 3.6,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 31.9,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 14.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 3.9,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 4,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 42.3,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "8",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 3.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 28.5,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 15.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 3.8,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 4.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 43.9,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "9",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 3.2,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 26.2,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 16.6,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 4,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 4.4,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 45.5,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "Ten",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 2.4,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 22.1,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 21.1,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 5.2,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 3.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 45.6,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "Jack",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 1.1,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 17.5,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 25.2,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 8.2,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 3.8,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 44.1,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "Queen",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 0.6,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 8.8,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 29.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 29.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 9.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 22.3,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "King",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 0.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 8.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 20.8,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 29.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 17.1,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 23.4,
+              "kind": "check"
+            }
+          ]
+        },
+        {
+          "category": "Ace",
+          "actions": [
+            {
+              "action": "Bet Allin (429%)",
+              "freq": 0,
+              "kind": "raise"
+            },
+            {
+              "action": "Bet 100%",
+              "freq": 0.9,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 75%",
+              "freq": 3.7,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 50%",
+              "freq": 8,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 25%",
+              "freq": 22.3,
+              "kind": "bet"
+            },
+            {
+              "action": "Bet 10%",
+              "freq": 31.4,
+              "kind": "bet"
+            },
+            {
+              "action": "Check",
+              "freq": 33.7,
+              "kind": "check"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "cta",
+      "headline": "Master the 3-Bet Flop",
+      "subtext": "Discover your winning strategy",
+      "voiceover": "Dive into GTOCentral to master every angle of the HJ vs SB 3-bet pot. Learn how to exploit every board texture.",
+      "audioFile": "reels/hj-vs-sb-3-bet-pot/scene_4.mp3",
+      "durationSec": 8.920000457763672,
+      "words": [
+        {
+          "word": "Dive",
+          "start": 0,
+          "end": 0.5199999809265137
+        },
+        {
+          "word": "into",
+          "start": 0.5199999809265137,
+          "end": 0.8600000143051147
+        },
+        {
+          "word": "GTO",
+          "start": 0.8600000143051147,
+          "end": 1.4199999570846558
+        },
+        {
+          "word": "Central",
+          "start": 1.4199999570846558,
+          "end": 1.7999999523162842
+        },
+        {
+          "word": "to",
+          "start": 1.7999999523162842,
+          "end": 2.2799999713897705
+        },
+        {
+          "word": "master",
+          "start": 2.2799999713897705,
+          "end": 2.5399999618530273
+        },
+        {
+          "word": "every",
+          "start": 2.5399999618530273,
+          "end": 3.0199999809265137
+        },
+        {
+          "word": "angle",
+          "start": 3.0199999809265137,
+          "end": 3.240000009536743
+        },
+        {
+          "word": "of",
+          "start": 3.240000009536743,
+          "end": 3.5
+        },
+        {
+          "word": "the",
+          "start": 3.5,
+          "end": 3.640000104904175
+        },
+        {
+          "word": "HJ",
+          "start": 3.640000104904175,
+          "end": 4.079999923706055
+        },
+        {
+          "word": "vs",
+          "start": 4.079999923706055,
+          "end": 4.460000038146973
+        },
+        {
+          "word": "SB",
+          "start": 4.860000133514404,
+          "end": 4.880000114440918
+        },
+        {
+          "word": "Freebat",
+          "start": 4.880000114440918,
+          "end": 5.28000020980835
+        },
+        {
+          "word": "pot",
+          "start": 5.28000020980835,
+          "end": 5.579999923706055
+        },
+        {
+          "word": "Learn",
+          "start": 6.440000057220459,
+          "end": 6.440000057220459
+        },
+        {
+          "word": "how",
+          "start": 6.440000057220459,
+          "end": 6.579999923706055
+        },
+        {
+          "word": "to",
+          "start": 6.579999923706055,
+          "end": 7.099999904632568
+        },
+        {
+          "word": "exploit",
+          "start": 7.099999904632568,
+          "end": 7.099999904632568
+        },
+        {
+          "word": "every",
+          "start": 7.099999904632568,
+          "end": 7.579999923706055
+        },
+        {
+          "word": "board",
+          "start": 7.579999923706055,
+          "end": 7.840000152587891
+        },
+        {
+          "word": "texture",
+          "start": 7.840000152587891,
+          "end": 8.220000267028809
+        }
+      ]
+    }
+  ]
+}
