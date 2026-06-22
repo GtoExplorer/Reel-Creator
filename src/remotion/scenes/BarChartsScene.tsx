@@ -38,14 +38,19 @@ function orderRows(scene: RenderScene): CategoryStrategy[] {
   if (!isRankAggregate(scene.category) && !looksLikeRankSeries(cats)) return cats;
   return cats
     .map((c, i) => ({ c, i, v: rankSortValue(c.category) }))
-    .sort((a, b) => (a.v === b.v ? a.i - b.i : a.v - b.v))
+    .sort((a, b) => {
+      if (a.v < 0 && b.v < 0) return a.i - b.i;
+      if (a.v < 0) return 1;
+      if (b.v < 0) return -1;
+      return a.v === b.v ? a.i - b.i : b.v - a.v;
+    })
     .map(({ c }) => c);
 }
 
 export const BarChartsScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  // Rendered in the data's natural order (card value ascending) — matches the Explorer.
+  // Rank series render high-to-low so Ace appears at the top of the chart.
   const cats = orderRows(scene);
   const kindsPresent = KIND_ORDER.filter((k) => cats.some((c) => c.actions.some((a) => a.kind === k)));
 

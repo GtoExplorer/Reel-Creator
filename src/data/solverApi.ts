@@ -21,7 +21,7 @@ import {
 type AggregateRow = { category: string | number | boolean; strategy: Record<string, number> };
 
 // Cap on bar rows - enough for all 13 card ranks (the largest property).
-// Rank properties are normalized to card value ascending; other properties keep
+// Rank properties are normalized high-to-low (Ace -> 2); other properties keep
 // the API's natural order.
 const MAX_BARS = 13;
 
@@ -154,7 +154,7 @@ function orderAggregateCategories(category: string, cats: CategoryStrategy[]): C
       if (a.v < 0 && b.v < 0) return a.i - b.i;
       if (a.v < 0) return 1;
       if (b.v < 0) return -1;
-      return a.v === b.v ? a.i - b.i : a.v - b.v;
+      return a.v === b.v ? a.i - b.i : b.v - a.v;
     })
     .map(({ c }) => c);
 }
@@ -170,7 +170,7 @@ async function fetchAggregate(brief: Brief, category: string): Promise<CategoryS
 }
 
 // Fetch one aggregate property's bars for a load (used by the editor's property
-// picker). Rank properties use card value ascending; other properties keep API order.
+// picker). Rank properties use high-to-low card order; other properties keep API order.
 export async function fetchCategoryStrategies(
   loadId: number,
   street: string,
@@ -185,7 +185,7 @@ export async function fetchCategoryStrategies(
   const maps = await labelMaps();
   const cats = orderAggregateCategories(category, parseAggregate((await res.json()) as AggregateRow[], maps.values[category]));
   if (!cats.length) return null;
-  // Cap after ordering, so rank charts keep the full 2 -> Ace sequence.
+  // Cap after ordering, so rank charts keep the full Ace -> 2 sequence.
   return { categories: cats.slice(0, MAX_BARS), label: propLabel(maps, category) };
 }
 
