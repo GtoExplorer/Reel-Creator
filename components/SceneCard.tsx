@@ -4,6 +4,7 @@ import { CameraPathEditor } from "./CameraPathEditor";
 import { VoicePicker } from "./VoicePicker";
 import { SceneDataControls } from "./SceneDataControls";
 import { SceneScriptButton } from "./SceneScriptButton";
+import { DrawingAnimationControls } from "./DrawingAnimationControls";
 
 export function SceneCard({
   scene,
@@ -67,6 +68,7 @@ export function SceneCard({
       <div className="label">Voiceover</div>
       <textarea className="input" value={scene.voiceover} onChange={(e) => onChange({ voiceover: e.target.value })} />
       <SceneScriptButton scene={scene} topic={topic} concept={concept} onChange={onChange} />
+      <DrawingAnimationControls scene={scene} onChange={onChange} />
 
       {hasDataControls && (
         <SceneDataControls

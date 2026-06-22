@@ -1,11 +1,14 @@
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
-import type { RenderScene } from "../../types.js";
+import type { RenderScene, TimedDrawingAnimation } from "../../types.js";
 import { theme } from "../theme.js";
+import { type DrawingBox, TimedDrawingOverlay } from "../components/DrawingOverlay.js";
 
 const GRID = 13;
 const CELL = 64;
 const GAP = 3;
+const PAD = 16;
+const GRID_SIZE = GRID * CELL + (GRID - 1) * GAP + PAD * 2;
 
 const Legend: React.FC = () => (
   <div style={{ display: "flex", gap: 36, marginTop: 36, justifyContent: "center" }}>
@@ -27,18 +30,29 @@ export const RangeGridScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
   const frame = useCurrentFrame();
   const cells = scene.rangeGrid ?? [];
 
+  function resolveBox(drawing: TimedDrawingAnimation): DrawingBox | null {
+    const target = drawing.target;
+    if (target.kind !== "preflopHand") return null;
+    const index = cells.findIndex((c) => c.combo.toLowerCase() === target.hand.toLowerCase());
+    if (index === -1) return null;
+    const row = Math.floor(index / GRID);
+    const col = index % GRID;
+    return { x: PAD + col * (CELL + GAP), y: PAD + row * (CELL + GAP), w: CELL, h: CELL };
+  }
+
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
       <div style={{ fontSize: 52, fontWeight: 800, color: theme.text, marginBottom: 30, letterSpacing: -1 }}>
         {scene.headline || "Preflop range"}
       </div>
-      <div
+      <div style={{ position: "relative", width: GRID_SIZE, height: GRID_SIZE }}>
+        <div
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${GRID}, ${CELL}px)`,
           gridTemplateRows: `repeat(${GRID}, ${CELL}px)`,
           gap: GAP,
-          padding: 16,
+          padding: PAD,
           borderRadius: 22,
           backgroundColor: theme.surface,
           border: `1px solid ${theme.surfaceBorder}`,
@@ -64,6 +78,8 @@ export const RangeGridScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
             </div>
           );
         })}
+        </div>
+        <TimedDrawingOverlay width={GRID_SIZE} height={GRID_SIZE} drawings={scene.drawings} resolveBox={resolveBox} />
       </div>
       <Legend />
     </div>

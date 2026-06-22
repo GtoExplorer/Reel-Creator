@@ -73,6 +73,7 @@ export function manifestToDraft(m: {
     panY: s.panY,
     nodes: s.nodes,
     camera: s.camera,
+    drawings: s.drawings,
     imageW: s.imageW,
     imageH: s.imageH,
   }));

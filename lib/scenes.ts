@@ -1,5 +1,6 @@
 import type { DraftManifest, DraftPool, DraftScene, RenderManifest, RenderScene, SceneType } from "@/src/types";
 import { hasPerNodeLines, voiceoverFromLines, timeCameraToLines } from "@/src/cameraTiming";
+import { resolveDrawingTimings, stripAnimationTags } from "@/src/drawingAnimations";
 
 // Build a fresh scene of any type, pulling its data from the draft's asset pool
 // so add-scene needs no new draft generation. Pure + client-safe.
@@ -49,11 +50,12 @@ export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number, gameI
 export function draftToPreview(draft: DraftManifest): RenderManifest {
   const scenes: RenderScene[] = draft.scenes.map((s) => {
     const perNode = s.type === "flowchart" && hasPerNodeLines(s.camera);
-    const vo = perNode ? voiceoverFromLines(s.camera) : s.voiceover ?? "";
+    const taggedVo = perNode ? voiceoverFromLines(s.camera) : s.voiceover ?? "";
+    const vo = stripAnimationTags(taggedVo);
     const words = vo.trim().split(/\s+/).filter(Boolean).length;
     const durationSec = Math.max(2.5, words / 2.6);
     const camera = perNode ? timeCameraToLines(s.camera ?? [], durationSec) : s.camera;
-    return { ...s, camera, voiceover: vo, audioFile: "", durationSec, words: [] };
+    return { ...s, camera, voiceover: vo, audioFile: "", durationSec, words: [], drawings: [] };
   });
   return { briefId: draft.briefId, title: draft.title, hashtags: draft.hashtags, scenes };
 }
@@ -87,6 +89,7 @@ export function draftToPreviewWithVoices(draft: DraftManifest, voiced: RenderMan
         durationSec: voicedScene.durationSec,
         words: voicedScene.words,
         camera: perNode ? timeCameraToLines(draftScene.camera ?? [], voicedScene.durationSec) : scene.camera,
+        drawings: resolveDrawingTimings(draftScene.drawings, draftScene.voiceover, voicedScene.words, voicedScene.durationSec),
       };
     }),
   };

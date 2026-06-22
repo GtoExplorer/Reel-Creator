@@ -20,6 +20,7 @@ import { synthesizeVoiceover } from "../openai/voiceover.js";
 import { alignCaptions } from "../openai/captions.js";
 import { aggression } from "../poker/ranges.js";
 import { hasPerNodeLines, voiceoverFromLines, timeCameraToLines } from "../cameraTiming.js";
+import { resolveDrawingTimings, stripAnimationTags } from "../drawingAnimations.js";
 
 // Both the tsx CLI and `next dev` run from the reels-pipeline package root, so
 // cwd is a stable anchor (import.meta.url is unreliable once Next bundles this).
@@ -212,7 +213,8 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
     // Per-node flowchart script: the voiceover is the waypoint lines in order,
     // and the camera is timed to each line (unless a custom clip is supplied).
     const perNode = d.type === "flowchart" && hasPerNodeLines(d.camera) && !e.customAudio;
-    const voiceover = e.voiceover ?? (perNode ? voiceoverFromLines(d.camera) : d.voiceover);
+    const taggedVoiceover = e.voiceover ?? (perNode ? voiceoverFromLines(d.camera) : d.voiceover);
+    const voiceover = stripAnimationTags(taggedVoiceover);
 
     let audioFile: string;
     let audioAbs: string;
@@ -227,6 +229,7 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       await synthesizeVoiceover(voiceover, audioAbs);
     }
     const { words, durationSec } = await alignCaptions(audioAbs, voiceover);
+    const drawings = resolveDrawingTimings(d.drawings, taggedVoiceover, words, durationSec);
 
     scenes.push({
       type: d.type,
@@ -249,6 +252,7 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       panY: e.panY ?? d.panY,
       nodes: d.nodes,
       camera: perNode ? timeCameraToLines(d.camera ?? [], durationSec) : d.camera,
+      drawings,
       imageW: d.imageW,
       imageH: d.imageH,
       audioFile,

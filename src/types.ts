@@ -167,6 +167,39 @@ export const WordTimestamp = z.object({
 });
 export type WordTimestamp = z.infer<typeof WordTimestamp>;
 
+export const DrawingTarget = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("preflopHand"),
+    hand: z.string(),
+  }),
+  z.object({
+    kind: z.literal("barRange"),
+    from: z.string(),
+    to: z.string(),
+  }),
+  z.object({
+    kind: z.literal("freqRange"),
+    from: z.string(),
+    to: z.string(),
+  }),
+]);
+export type DrawingTarget = z.infer<typeof DrawingTarget>;
+
+export const DrawingAnimation = z.object({
+  id: z.string(),
+  shape: z.enum(["rect", "circle"]).default("rect"),
+  target: DrawingTarget,
+  drawSec: z.number().positive().default(0.35),
+  padding: z.number().min(0).default(12),
+});
+export type DrawingAnimation = z.infer<typeof DrawingAnimation>;
+
+export const TimedDrawingAnimation = DrawingAnimation.extend({
+  startSec: z.number(),
+  endSec: z.number(),
+});
+export type TimedDrawingAnimation = z.infer<typeof TimedDrawingAnimation>;
+
 // One scene, fully resolved and ready for Remotion to render.
 export const RenderScene = z.object({
   type: SceneType,
@@ -192,6 +225,7 @@ export const RenderScene = z.object({
   panY: z.number().optional(), // captured-scene vertical offset, % (default 0)
   nodes: z.array(FlowNode).optional(), // flowchart node positions for camera targeting
   camera: z.array(CameraStep).optional(), // flowchart camera path (waypoints)
+  drawings: z.array(TimedDrawingAnimation).optional(), // timed focus outlines from <a1>...</a1> voiceover tags
   imageW: z.number().optional(), // captured image dimensions (for aspect-correct framing)
   imageH: z.number().optional(),
 });
@@ -219,6 +253,7 @@ export const DraftScene = z.object({
   panY: z.number().optional(),
   nodes: z.array(FlowNode).optional(),
   camera: z.array(CameraStep).optional(),
+  drawings: z.array(DrawingAnimation).optional(), // semantic focus outlines timed by <a1>...</a1> voiceover tags
   imageW: z.number().optional(),
   imageH: z.number().optional(),
 });
