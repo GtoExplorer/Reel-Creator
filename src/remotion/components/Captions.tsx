@@ -4,6 +4,15 @@ import type { WordTimestamp } from "../../types.js";
 import { theme, SAFE } from "../theme.js";
 
 const CHUNK = 3;
+const CAPTION_BOTTOM = SAFE.bottom - 170;
+
+function captionFontSize(words: WordTimestamp[]): number {
+  const chars = words.map((w) => w.word).join(" ").length;
+  if (chars <= 18) return 64;
+  if (chars <= 26) return 58;
+  if (chars <= 34) return 50;
+  return 44;
+}
 
 function chunkWords(words: WordTimestamp[]): WordTimestamp[][] {
   const out: WordTimestamp[][] = [];
@@ -26,18 +35,22 @@ export const Captions: React.FC<{ words: WordTimestamp[] }> = ({ words }) => {
     if (active < 0) active = 0;
   }
   const chunk = chunks[active];
+  const fontSize = captionFontSize(chunk);
 
   return (
     <div
       style={{
         position: "absolute",
-        bottom: SAFE.bottom - 120,
+        bottom: CAPTION_BOTTOM,
         left: SAFE.side,
         right: SAFE.side,
         display: "flex",
-        flexWrap: "wrap",
+        flexWrap: "nowrap",
+        alignItems: "center",
         justifyContent: "center",
-        gap: "10px 16px",
+        gap: 14,
+        height: 104,
+        whiteSpace: "nowrap",
       }}
     >
       {chunk.map((w, i) => {
@@ -49,11 +62,12 @@ export const Captions: React.FC<{ words: WordTimestamp[] }> = ({ words }) => {
           <span
             key={i}
             style={{
-              fontSize: 64,
+              fontSize,
               fontWeight: 900,
               lineHeight: 1.08,
-              letterSpacing: -1,
+              letterSpacing: 0,
               transform: `scale(${scale})`,
+              transformOrigin: "center",
               color: isActive ? theme.bg : theme.text,
               backgroundColor: isActive ? theme.accent : "transparent",
               padding: isActive ? "2px 16px" : "2px 0",

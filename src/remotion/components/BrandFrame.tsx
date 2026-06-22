@@ -11,8 +11,8 @@ export const BrandFrame: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
-      <div style={{ position: "absolute", top: 92, width: "100%", display: "flex", justifyContent: "center" }}>
-        <Img src={staticFile("brand/gto-inline.svg")} style={{ height: 58, width: "auto" }} />
+      <div style={{ position: "absolute", top: 132, width: "100%", display: "flex", justifyContent: "center" }}>
+        <Img src={staticFile("brand/gto-inline.svg")} style={{ height: 68, width: "auto" }} />
       </div>
 
       <div style={{ position: "absolute", bottom: 64, left: 80, right: 80, height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.12)" }}>

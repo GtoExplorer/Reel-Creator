@@ -221,7 +221,7 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       console.log(`  • Scene ${i} (${d.type}): voiceover (AI)`);
       await synthesizeVoiceover(voiceover, audioAbs);
     }
-    const { words, durationSec } = await alignCaptions(audioAbs);
+    const { words, durationSec } = await alignCaptions(audioAbs, voiceover);
 
     scenes.push({
       type: d.type,
