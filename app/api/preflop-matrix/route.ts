@@ -1,20 +1,25 @@
 import { NextResponse } from "next/server";
-import { fetchPreflopMatrixForLoad } from "@/src/data/solverApi";
+import { fetchPreflopMatrixForLine, fetchPreflopMatrixForLoad } from "@/src/data/solverApi";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// GET /api/preflop-matrix?loadId=68617[&gameId=...] -> { rangeGrid, label, line, gameId }
+// GET /api/preflop-matrix?line=Fold,Fold,Raise%202.5bb[&gameId=...]
+// Legacy fallback: /api/preflop-matrix?loadId=68617[&gameId=...]
 export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams;
+  const line = (sp.get("line") || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   const loadId = Number(sp.get("loadId"));
   const gameId = sp.get("gameId") || undefined;
-  if (!loadId) return NextResponse.json({ error: "loadId required" }, { status: 400 });
+  if (!line.length && !loadId) return NextResponse.json({ error: "preflop line required" }, { status: 400 });
   try {
-    const r = await fetchPreflopMatrixForLoad(loadId, gameId);
+    const r = line.length ? await fetchPreflopMatrixForLine(line, gameId) : await fetchPreflopMatrixForLoad(loadId, gameId);
     if (!r) {
       return NextResponse.json(
-        { error: "No preflop range found for that load id (wrong game, or not a postflop-closing load)." },
+        { error: "No preflop range found for that action sequence/game." },
         { status: 404 }
       );
     }

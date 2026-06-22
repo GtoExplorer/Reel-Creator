@@ -47,6 +47,7 @@ export function manifestToDraft(m: {
   concept?: string;
   loadId?: number;
   gameId?: string;
+  preflopLine?: string[];
   street?: string;
   scenes: Record<string, unknown>[];
 }) {
@@ -59,6 +60,7 @@ export function manifestToDraft(m: {
     customAudio: s.customAudio,
     loadId: s.loadId,
     gameId: s.gameId,
+    preflopLine: s.preflopLine,
     filters: s.filters,
     category: s.category,
     barValue: s.barValue,
@@ -83,7 +85,19 @@ export function manifestToDraft(m: {
     if (s.type === "freqBars" && s.categories) { pool.boardCategories = s.categories; pool.boardLabel = s.headline; pool.categories = s.categories; }
     if (s.freqBars) { pool.freqBars = s.freqBars; pool.highlightLabel = s.barValue ?? s.headline; }
   }
-  return { briefId: m.briefId, title: m.title, hashtags: m.hashtags, topic: m.topic, concept: m.concept, loadId: m.loadId, gameId: m.gameId, street: m.street, pool, scenes };
+  return {
+    briefId: m.briefId,
+    title: m.title,
+    hashtags: m.hashtags,
+    topic: m.topic,
+    concept: m.concept,
+    loadId: m.loadId,
+    gameId: m.gameId,
+    preflopLine: m.preflopLine,
+    street: m.street,
+    pool,
+    scenes,
+  };
 }
 
 // Delete a reel/draft: removes its out/<id> dir (draft.json, manifest, mp4) and

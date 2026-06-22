@@ -14,6 +14,7 @@ export function SceneCard({
   concept,
   loadId,
   gameId,
+  preflopLine,
   street,
   clip,
   onChange,
@@ -29,6 +30,7 @@ export function SceneCard({
   concept: string;
   loadId?: number;
   gameId?: string;
+  preflopLine?: string[];
   street?: string;
   clip: string | null;
   onChange: (patch: Partial<DraftScene>) => void;
@@ -66,7 +68,16 @@ export function SceneCard({
       <textarea className="input" value={scene.voiceover} onChange={(e) => onChange({ voiceover: e.target.value })} />
       <SceneScriptButton scene={scene} topic={topic} concept={concept} onChange={onChange} />
 
-      {hasDataControls && <SceneDataControls scene={scene} defaultLoadId={loadId} defaultGameId={gameId} street={street} onChange={onChange} />}
+      {hasDataControls && (
+        <SceneDataControls
+          scene={scene}
+          defaultLoadId={loadId}
+          defaultGameId={gameId}
+          defaultPreflopLine={preflopLine}
+          street={street}
+          onChange={onChange}
+        />
+      )}
 
       {hasCam && <CameraPathEditor scene={scene} onChange={onChange} topic={topic} concept={concept} />}
 

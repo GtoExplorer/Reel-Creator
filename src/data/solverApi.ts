@@ -227,56 +227,84 @@ function gridFromSolutions(handSolutions: Record<string, { strategy: Record<stri
   return grid;
 }
 
-// Native preflop range matrix: walk the preflop-wizard tree along the line to the
-// LAST raiser's decision node — i.e. the range that player is opening/3-betting —
-// and bucket each combo into raise/call/fold proportions. Falls back to root.
-async function fetchPreflopRange(brief: Pick<Brief, "gameId" | "preflopLine">): Promise<{ grid: RangeCell[]; label?: string } | null> {
+async function preflopGameIds(gameId?: string): Promise<string[]> {
+  if (gameId) return [gameId];
+  const gamesRes = await authGet(`/games/`);
+  if (!gamesRes.ok) return [];
+  return sortGameIds((await gamesRes.json()) as { id: string }[]);
+}
+
+function normalizeActionLabel(label: string): string {
+  return label.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function findActionId(next: Record<string, unknown>, label: string): string | undefined {
+  const needle = normalizeActionLabel(label);
+  return Object.keys(next).find((key) => {
+    return normalizeActionLabel(actionDisplayName(key)) === needle || normalizeActionLabel(key) === needle;
+  });
+}
+
+function resolvePreflopPath(strategies: Record<string, WizardNode>, line: string[]): string[] | null {
+  const path: string[] = [];
+  for (const label of line) {
+    const key = path.length ? path.join("-") : "0";
+    const next = strategies[key]?.solutions?.next_actions;
+    if (!next) return null;
+    const aid = findActionId(next, label);
+    if (!aid) return null;
+    path.push(aid);
+  }
+  return path;
+}
+
+function matrixPathForSelectedPath(strategies: Record<string, WizardNode>, path: string[]): string[] {
+  if (path.length === 0) return path;
+  const last = path[path.length - 1];
+  const parent = path.slice(0, -1);
+  const parentKey = parent.length ? parent.join("-") : "0";
+  return strategies[parentKey]?.solutions?.next_actions?.[last]?.postflop_id ? parent : path;
+}
+
+function labelForPreflopMatrix(node: WizardNode | undefined, line: string[], matrixPath: string[]): string | undefined {
+  const player = node?.player_node?.player;
+  if (!player) return undefined;
+  const endedAtPostflopExit = matrixPath.length < line.length;
+  const action = endedAtPostflopExit ? line[line.length - 1] : undefined;
+  return action ? `${positionName(player)} ${action} Range` : `${positionName(player)} Range`;
+}
+
+// Native preflop range matrix from the exact preflop action sequence selected in
+// the wizard. This mirrors Explorer's PreflopRangeMatrix: use the selected path,
+// except when the last action exits to a postflop load, where the parent decision
+// node contains the visible matrix.
+export async function fetchPreflopMatrixForLine(
+  line: string[],
+  gameId?: string
+): Promise<{ grid: RangeCell[]; label?: string; line: string[]; gameId: string } | null> {
+  if (!config.explorerSessionSecret || !config.explorerLoginEmail) return null;
   try {
-    let gameId = brief.gameId;
-    if (!gameId) {
-      const gamesRes = await authGet(`/games/`);
-      if (!gamesRes.ok) return null;
-      const games = (await gamesRes.json()) as { id: string }[];
-      gameId = sortGameIds(games)[0];
+    for (const gid of await preflopGameIds(gameId)) {
+      const res = await authGet(`/preflop_wizard_strats/${gid}`);
+      if (!res.ok) continue;
+      const strategies = (await res.json()) as Record<string, WizardNode>;
+      const selectedPath = resolvePreflopPath(strategies, line);
+      if (!selectedPath) continue;
+      const matrixPath = matrixPathForSelectedPath(strategies, selectedPath);
+      const key = matrixPath.length ? matrixPath.join("-") : "0";
+      const node = strategies[key];
+      const handSolutions = node?.solutions?.hand_solutions;
+      if (!handSolutions) continue;
+      return {
+        grid: gridFromSolutions(handSolutions),
+        label: labelForPreflopMatrix(node, line, matrixPath),
+        line,
+        gameId: gid,
+      };
     }
-    if (!gameId) return null;
-
-    const res = await authGet(`/preflop_wizard_strats/${gameId}`);
-    if (!res.ok) return null;
-    const strategies = (await res.json()) as Record<string, WizardNode>;
-
-    // Navigate the display-label line into an action-id path.
-    const path: string[] = [];
-    for (const label of brief.preflopLine ?? []) {
-      const key = path.length ? path.join("-") : "0";
-      const next = strategies[key]?.solutions?.next_actions;
-      if (!next) break;
-      const aid = Object.keys(next).find((k) => actionDisplayName(k) === label);
-      if (!aid) break;
-      path.push(aid);
-    }
-
-    // The node BEFORE the last raise = that player's opening/3-bet decision range.
-    let raiserIdx = -1;
-    path.forEach((a, i) => {
-      if (rawActionKind(a) === "raise") raiserIdx = i;
-    });
-    const nodePath = raiserIdx >= 0 ? path.slice(0, raiserIdx) : [];
-    const key = nodePath.length ? nodePath.join("-") : "0";
-    const node = strategies[key];
-    const handSolutions = node?.solutions?.hand_solutions ?? strategies["0"]?.solutions?.hand_solutions;
-    if (!handSolutions) return null;
-
-    let label: string | undefined;
-    const player = node?.player_node?.player;
-    if (player && raiserIdx >= 0) {
-      const priorRaise = path.slice(0, raiserIdx).some((a) => rawActionKind(a) === "raise");
-      label = `${positionName(player)} ${priorRaise ? "3-Bet Range" : "Opening Range"}`;
-    }
-
-    return { grid: gridFromSolutions(handSolutions), label };
+    return null;
   } catch (e) {
-    console.warn("[solverApi] preflop range fetch failed:", (e as Error).message);
+    console.warn("[solverApi] preflop matrix for line failed:", (e as Error).message);
     return null;
   }
 }
@@ -432,7 +460,11 @@ export async function fetchSpotData(brief: Brief): Promise<SpotData> {
   // Native preflop matrix + board-selection bars (best-effort; mock on failure).
   const boardCat = brief.boardCategory ?? "flop_top_card_rank";
   const [pre, boardCats] = await Promise.all([
-    brief.loadId ? fetchPreflopMatrixForLoad(brief.loadId, brief.gameId) : fetchPreflopRange(brief),
+    brief.preflopLine?.length
+      ? fetchPreflopMatrixForLine(brief.preflopLine, brief.gameId)
+      : brief.loadId
+        ? fetchPreflopMatrixForLoad(brief.loadId, brief.gameId)
+        : null,
     fetchAggregate(brief, boardCat),
   ]);
   spot.preflopGrid = pre?.grid ?? buildMockGrid();

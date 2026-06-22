@@ -161,7 +161,7 @@ export function Studio() {
     invalidate();
   }
   function addScene(t: SceneType) {
-    setDraft((d) => (d ? { ...d, scenes: [...d.scenes, makeScene(t, d.pool, d.loadId, d.gameId)] } : d));
+    setDraft((d) => (d ? { ...d, scenes: [...d.scenes, makeScene(t, d.pool, d.loadId, d.gameId, d.preflopLine)] } : d));
     setClips((c) => [...c, null]);
     invalidate();
   }

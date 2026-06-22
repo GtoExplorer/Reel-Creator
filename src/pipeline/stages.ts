@@ -140,6 +140,10 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
       base.loadId = loadId;
       base.gameId = gameId;
     }
+    if (r.type === "preflopMatrix") {
+      base.loadId = undefined;
+      base.preflopLine = preflopLine;
+    }
     if (r.type === "flowchart") {
       // Default camera: open on the full tree, then a gentle centred push-in.
       base.nodes = fcNodes;
@@ -173,6 +177,7 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     concept: brief.concept,
     loadId,
     gameId,
+    preflopLine,
     street: brief.street ?? "flop",
     pool,
     scenes,
@@ -231,6 +236,7 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       customAudio: e.customAudio ?? d.customAudio,
       loadId: d.loadId,
       gameId: d.gameId,
+      preflopLine: d.preflopLine,
       filters: d.filters,
       category: d.category,
       barValue: d.barValue,

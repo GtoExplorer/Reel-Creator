@@ -50,6 +50,7 @@ export function SceneList({
             concept={concept}
             loadId={draft.loadId}
             gameId={draft.gameId}
+            preflopLine={draft.preflopLine}
             street={draft.street}
             clip={clips[i] ?? null}
             onChange={(patch) => onSceneChange(i, patch)}

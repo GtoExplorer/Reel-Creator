@@ -3,14 +3,14 @@ import { hasPerNodeLines, voiceoverFromLines, timeCameraToLines } from "@/src/ca
 
 // Build a fresh scene of any type, pulling its data from the draft's asset pool
 // so add-scene needs no new draft generation. Pure + client-safe.
-export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number, gameId?: string): DraftScene {
+export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number, gameId?: string, preflopLine?: string[]): DraftScene {
   const p = pool ?? {};
   const base: DraftScene = { type: t, headline: "", subtext: "", voiceover: "" };
   const barCategories = p.boardCategories ?? p.categories;
   const focusBar = barCategories?.[Math.floor((barCategories.length - 1) / 2)];
   switch (t) {
     case "preflopMatrix":
-      return { ...base, loadId, gameId, rangeGrid: p.preflopGrid, headline: p.preflopLabel ?? "Preflop Range" };
+      return { ...base, gameId, preflopLine, rangeGrid: p.preflopGrid, headline: p.preflopLabel ?? "Preflop Range" };
     case "flowchart":
       return {
         ...base,

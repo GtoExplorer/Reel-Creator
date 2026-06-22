@@ -179,6 +179,7 @@ export const RenderScene = z.object({
   words: z.array(WordTimestamp),
   loadId: z.number().optional(), // scene-level override; defaults to draft loadId
   gameId: z.string().optional(), // preflop wizard game used to resolve this scene's load id
+  preflopLine: z.array(z.string()).optional(), // preflopMatrix scene: comma-separated action sequence source
   filters: z.array(SceneFilter).optional(), // property/value filters applied to scene data fetches
   category: z.string().optional(), // for bar-chart scenes: which aggregate property is shown
   barValue: z.string().optional(), // for freqBars: which row/category from the aggregate is isolated
@@ -205,6 +206,7 @@ export const DraftScene = z.object({
   customAudio: z.string().optional(), // recorded/uploaded source clip, persisted with draft edits
   loadId: z.number().optional(), // scene-level override; defaults to draft loadId
   gameId: z.string().optional(), // preflop wizard game used to resolve this scene's load id
+  preflopLine: z.array(z.string()).optional(), // preflopMatrix scene: comma-separated action sequence source
   filters: z.array(SceneFilter).optional(), // property/value filters applied to scene data fetches
   category: z.string().optional(), // for bar-chart scenes: which aggregate property is shown
   barValue: z.string().optional(), // for freqBars: which row/category from the aggregate is isolated
@@ -248,6 +250,7 @@ export const DraftManifest = z.object({
   concept: z.string().optional(),
   loadId: z.number().optional(), // so the editor can refetch other properties
   gameId: z.string().optional(), // preflop wizard game that disambiguates loadId -> line/matrix
+  preflopLine: z.array(z.string()).optional(), // default preflop action sequence for preflopMatrix scenes
   street: z.string().optional(),
   pool: DraftPool.optional(),
   scenes: z.array(DraftScene),

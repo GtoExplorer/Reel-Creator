@@ -18,12 +18,14 @@ export function SceneDataControls({
   scene,
   defaultLoadId,
   defaultGameId,
+  defaultPreflopLine,
   street,
   onChange,
 }: {
   scene: DraftScene;
   defaultLoadId?: number;
   defaultGameId?: string;
+  defaultPreflopLine?: string[];
   street?: string;
   onChange: (patch: Partial<DraftScene>) => void;
 }) {
@@ -34,9 +36,12 @@ export function SceneDataControls({
   const isPreflop = scene.type === "preflopMatrix";
   const sceneLoadId = scene.loadId ?? defaultLoadId;
   const sceneGameId = scene.gameId ?? defaultGameId;
+  const scenePreflopLine = scene.preflopLine ?? defaultPreflopLine ?? [];
+  const scenePreflopLineText = scenePreflopLine.join(", ");
   const filters = scene.filters ?? [];
 
   const [loadText, setLoadText] = useState(sceneLoadId ? String(sceneLoadId) : "");
+  const [lineText, setLineText] = useState(scenePreflopLineText);
   const [labels, setLabels] = useState<Record<string, string>>({});
   const [values, setValues] = useState<ValueOptions>({});
   const [filterProperty, setFilterProperty] = useState("");
@@ -46,6 +51,10 @@ export function SceneDataControls({
   useEffect(() => {
     setLoadText(sceneLoadId ? String(sceneLoadId) : "");
   }, [sceneLoadId]);
+
+  useEffect(() => {
+    setLineText(scenePreflopLineText);
+  }, [scenePreflopLineText]);
 
   useEffect(() => {
     fetch("/api/properties")
@@ -68,34 +77,44 @@ export function SceneDataControls({
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
-  async function applyData(opts: { loadId?: number; filters?: SceneFilter[]; category?: string; barValue?: string } = {}) {
-    const nextLoadId = opts.loadId ?? parsedLoadId();
-    const nextFilters = opts.filters ?? filters;
-    if (!nextLoadId) {
-      alert("Enter a valid load ID");
-      return;
-    }
+  function parsedPreflopLine(): string[] {
+    return lineText.split(",").map((s) => s.trim()).filter(Boolean);
+  }
 
+  async function applyData(opts: { loadId?: number; filters?: SceneFilter[]; category?: string; barValue?: string } = {}) {
     if (isPreflop) {
+      const nextLine = parsedPreflopLine();
+      if (!nextLine.length) {
+        alert("Enter a preflop action sequence");
+        return;
+      }
       setBusy(true);
       try {
         const gameParam = sceneGameId ? `&gameId=${encodeURIComponent(sceneGameId)}` : "";
-        const r = await fetch(`/api/preflop-matrix?loadId=${nextLoadId}${gameParam}`).then((res) => res.json());
+        const r = await fetch(`/api/preflop-matrix?line=${encodeURIComponent(nextLine.join(","))}${gameParam}`).then((res) => res.json());
         if (r.rangeGrid?.length) {
           onChange({
-            loadId: nextLoadId,
+            loadId: undefined,
             gameId: r.gameId || sceneGameId,
+            preflopLine: r.line || nextLine,
             rangeGrid: r.rangeGrid as RangeCell[],
             headline: r.label || "Preflop Range",
           });
         } else {
-          alert(r.error || "No preflop range found for that load ID");
+          alert(r.error || "No preflop range found for that sequence");
         }
       } catch {
         alert("Preflop matrix fetch failed");
       } finally {
         setBusy(false);
       }
+      return;
+    }
+
+    const nextLoadId = opts.loadId ?? parsedLoadId();
+    const nextFilters = opts.filters ?? filters;
+    if (!nextLoadId) {
+      alert("Enter a valid load ID");
       return;
     }
 
@@ -230,8 +249,17 @@ export function SceneDataControls({
     <div className="mt-3 rounded-lg border border-line p-2.5">
       <div className="grid grid-cols-[1fr_auto] gap-2">
         <div>
-          <div className="label">Scene load ID</div>
-          <input className="input" value={loadText} onChange={(e) => setLoadText(e.target.value)} placeholder={defaultLoadId ? String(defaultLoadId) : "Load ID"} />
+          <div className="label">{isPreflop ? "Preflop line (comma-separated)" : "Scene load ID"}</div>
+          {isPreflop ? (
+            <input
+              className="input"
+              value={lineText}
+              onChange={(e) => setLineText(e.target.value)}
+              placeholder="Fold, Fold, Fold, Raise 2.5bb, Fold, Call"
+            />
+          ) : (
+            <input className="input" value={loadText} onChange={(e) => setLoadText(e.target.value)} placeholder={defaultLoadId ? String(defaultLoadId) : "Load ID"} />
+          )}
         </div>
         <div className="flex items-end">
           <button className="btn-ghost btn-mini mb-0.5" disabled={busy} onClick={() => applyData()}>
