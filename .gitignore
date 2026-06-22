@@ -5,4 +5,5 @@ public/reels
 .next
 *.log
 out/
+
 tsconfig.tsbuildinfo

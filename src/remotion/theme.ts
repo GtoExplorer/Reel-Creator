@@ -30,8 +30,8 @@ export const theme = {
 
 // Instagram Reels UI overlays the edges. Keep meaningful content inside these.
 export const SAFE = {
-  top: 270,
-  bottom: 520,
+  top: 320,
+  bottom: 470,
   side: 80,
   rightRail: 150,
 };
