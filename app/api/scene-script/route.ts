@@ -24,10 +24,12 @@ function nodeForWaypoint(nodes: FlowNode[] = [], wp: CameraStep): FlowNode | und
 function flowchartCameraNodes(scene: DraftSceneT): { label: string; summary?: string; edge?: string }[] {
   const nodes = scene.nodes ?? [];
   const camera = scene.camera ?? [];
-  const picked = camera
-    .map((wp) => nodeForWaypoint(nodes, wp))
-    .filter((n): n is FlowNode => Boolean(n));
-  return picked.map((n) => ({ label: n.label, summary: n.summary, edge: n.edge }));
+  return camera.map((wp) => {
+    const n = nodeForWaypoint(nodes, wp);
+    return n
+      ? { label: n.label, summary: n.summary, edge: n.edge }
+      : { label: "The full decision tree", summary: "", edge: undefined };
+  });
 }
 
 function rangeGridFacts(grid: RangeCell[] = []): string {
@@ -66,9 +68,11 @@ function freqFacts(scene: DraftSceneT): string {
 function genericFacts(scene: DraftSceneT): string {
   switch (scene.type) {
     case "preflopMatrix":
-      return rangeGridFacts(scene.rangeGrid);
+      return [scene.preflopLine?.length ? `Preflop action sequence: ${scene.preflopLine.join(", ")}` : "", rangeGridFacts(scene.rangeGrid)]
+        .filter(Boolean)
+        .join("\n");
     case "freqBars":
-      return freqFacts(scene);
+      return [scene.category ? `Source bar chart property: ${scene.category}` : "", freqFacts(scene)].filter(Boolean).join("\n");
     case "hook":
       return "Opening hook. Create curiosity around the current poker spot and the strategic mistake the viewer might be making.";
     case "cta":

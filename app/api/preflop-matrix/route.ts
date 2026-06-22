@@ -8,15 +8,16 @@ export const dynamic = "force-dynamic";
 // Legacy fallback: /api/preflop-matrix?loadId=68617[&gameId=...]
 export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams;
+  const hasLine = sp.has("line");
   const line = (sp.get("line") || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
   const loadId = Number(sp.get("loadId"));
   const gameId = sp.get("gameId") || undefined;
-  if (!line.length && !loadId) return NextResponse.json({ error: "preflop line required" }, { status: 400 });
+  if (!hasLine && !loadId) return NextResponse.json({ error: "preflop line required" }, { status: 400 });
   try {
-    const r = line.length ? await fetchPreflopMatrixForLine(line, gameId) : await fetchPreflopMatrixForLoad(loadId, gameId);
+    const r = hasLine ? await fetchPreflopMatrixForLine(line, gameId) : await fetchPreflopMatrixForLoad(loadId, gameId);
     if (!r) {
       return NextResponse.json(
         { error: "No preflop range found for that action sequence/game." },

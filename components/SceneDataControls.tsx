@@ -84,10 +84,6 @@ export function SceneDataControls({
   async function applyData(opts: { loadId?: number; filters?: SceneFilter[]; category?: string; barValue?: string } = {}) {
     if (isPreflop) {
       const nextLine = parsedPreflopLine();
-      if (!nextLine.length) {
-        alert("Enter a preflop action sequence");
-        return;
-      }
       setBusy(true);
       try {
         const gameParam = sceneGameId ? `&gameId=${encodeURIComponent(sceneGameId)}` : "";
@@ -255,7 +251,7 @@ export function SceneDataControls({
               className="input"
               value={lineText}
               onChange={(e) => setLineText(e.target.value)}
-              placeholder="Fold, Fold, Fold, Raise 2.5bb, Fold, Call"
+              placeholder="Leave blank for the first preflop decision"
             />
           ) : (
             <input className="input" value={loadText} onChange={(e) => setLoadText(e.target.value)} placeholder={defaultLoadId ? String(defaultLoadId) : "Load ID"} />
