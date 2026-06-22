@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
-import { DraftScene, type CameraStep, type DraftScene as DraftSceneT, type FlowNode, type RangeCell } from "@/src/types";
-import { narrateBars, narrateFlowchart, narrateFlowchartNodes, narrateSceneFromFacts } from "@/src/openai/script";
+import { DraftScene, type CameraStep, type DraftScene as DraftSceneT, type FlowNode } from "@/src/types";
+import { narrateBars, narrateFlowchart, narrateFlowchartNodes, narratePreflopMatrix, narrateSceneFromFacts } from "@/src/openai/script";
 import { hasPerNodeLines, voiceoverFromLines } from "@/src/cameraTiming";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const WP_EPS = 1e-3;
-
-function comboWeight(combo: string): number {
-  if (combo.length === 2) return 6;
-  return combo.endsWith("s") ? 4 : 12;
-}
 
 function pct(n: number): string {
   return `${Math.round(n)}%`;
@@ -32,31 +27,6 @@ function flowchartCameraNodes(scene: DraftSceneT): { label: string; summary?: st
   });
 }
 
-function rangeGridFacts(grid: RangeCell[] = []): string {
-  if (!grid.length) return "";
-  let raise = 0;
-  let call = 0;
-  let fold = 0;
-  let total = 0;
-  for (const c of grid) {
-    const w = comboWeight(c.combo);
-    raise += c.raise * w;
-    call += c.call * w;
-    fold += c.fold * w;
-    total += w;
-  }
-  const rows = [
-    `Overall range mix: raise ${pct((raise / total) * 100)}, call/check ${pct((call / total) * 100)}, fold ${pct((fold / total) * 100)}.`,
-  ];
-  const active = grid
-    .map((c) => ({ combo: c.combo, play: (c.raise + c.call) * 100, raise: c.raise * 100, call: c.call * 100, fold: c.fold * 100 }))
-    .sort((a, b) => b.play - a.play)
-    .slice(0, 8)
-    .map((c) => `${c.combo}: play ${pct(c.play)} (raise ${pct(c.raise)}, call/check ${pct(c.call)}, fold ${pct(c.fold)})`);
-  if (active.length) rows.push(`Most played hands:\n${active.join("\n")}`);
-  return rows.join("\n");
-}
-
 function freqFacts(scene: DraftSceneT): string {
   const bars = scene.freqBars ?? [];
   if (!bars.length) return "";
@@ -67,10 +37,6 @@ function freqFacts(scene: DraftSceneT): string {
 
 function genericFacts(scene: DraftSceneT): string {
   switch (scene.type) {
-    case "preflopMatrix":
-      return [scene.preflopLine?.length ? `Preflop action sequence: ${scene.preflopLine.join(", ")}` : "", rangeGridFacts(scene.rangeGrid)]
-        .filter(Boolean)
-        .join("\n");
     case "freqBars":
       return [scene.category ? `Source bar chart property: ${scene.category}` : "", freqFacts(scene)].filter(Boolean).join("\n");
     case "hook":
@@ -92,6 +58,17 @@ export async function POST(req: Request) {
 
     if (scene.type === "barCharts") {
       const r = await narrateBars(topic, concept, scene.category || "this property", scene.categories ?? []);
+      return NextResponse.json(r);
+    }
+
+    if (scene.type === "preflopMatrix") {
+      const r = await narratePreflopMatrix({
+        topic,
+        concept,
+        headline: scene.headline,
+        preflopLine: scene.preflopLine,
+        rangeGrid: scene.rangeGrid,
+      });
       return NextResponse.json(r);
     }
 

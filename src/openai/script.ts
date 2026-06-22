@@ -1,6 +1,6 @@
 import { openai } from "./client.js";
 import { config } from "../config.js";
-import { Storyboard, type Brief, type CategoryStrategy } from "../types.js";
+import { Storyboard, type Brief, type CategoryStrategy, type RangeCell } from "../types.js";
 
 const JSON_SCHEMA = {
   name: "storyboard",
@@ -205,6 +205,103 @@ export async function narrateBars(
       },
     ],
     response_format: { type: "json_schema", json_schema: BARS_SCHEMA },
+  });
+  const j = JSON.parse(completion.choices[0]?.message?.content ?? "{}");
+  return { voiceover: String(j.voiceover ?? ""), subtext: String(j.subtext ?? "") };
+}
+
+function comboWeight(combo: string): number {
+  if (combo.length === 2) return 6;
+  return combo.endsWith("s") ? 4 : 12;
+}
+
+function pct(n: number): string {
+  return `${Math.round(n)}%`;
+}
+
+function preflopMatrixFacts(line: string[] = [], grid: RangeCell[] = []): string {
+  const rows: string[] = [
+    line.length
+      ? `Preflop action sequence: ${line.join(", ")}.`
+      : "Preflop action sequence: no action yet; this is the first/root preflop decision.",
+  ];
+
+  if (!grid.length) return rows.join("\n");
+
+  let raise = 0;
+  let call = 0;
+  let fold = 0;
+  let total = 0;
+  for (const c of grid) {
+    const w = comboWeight(c.combo);
+    raise += c.raise * w;
+    call += c.call * w;
+    fold += c.fold * w;
+    total += w;
+  }
+  if (total > 0) {
+    rows.push(`Overall range mix: raise ${pct((raise / total) * 100)}, call/check ${pct((call / total) * 100)}, fold ${pct((fold / total) * 100)}.`);
+  }
+
+  const mostPlayed = grid
+    .map((c) => ({ combo: c.combo, play: (c.raise + c.call) * 100, raise: c.raise * 100, call: c.call * 100, fold: c.fold * 100 }))
+    .sort((a, b) => b.play - a.play || b.raise - a.raise || a.combo.localeCompare(b.combo))
+    .slice(0, 8)
+    .map((c) => `${c.combo}: play ${pct(c.play)} (raise ${pct(c.raise)}, call/check ${pct(c.call)}, fold ${pct(c.fold)})`);
+  if (mostPlayed.length) rows.push(`Most played hands:\n${mostPlayed.join("\n")}`);
+
+  const mostRaised = grid
+    .map((c) => ({ combo: c.combo, raise: c.raise * 100 }))
+    .filter((c) => c.raise > 0)
+    .sort((a, b) => b.raise - a.raise || a.combo.localeCompare(b.combo))
+    .slice(0, 8)
+    .map((c) => `${c.combo}: raise ${pct(c.raise)}`);
+  if (mostRaised.length) rows.push(`Highest raise-frequency hands:\n${mostRaised.join("\n")}`);
+
+  return rows.join("\n");
+}
+
+const PREFLOP_MATRIX_SYSTEM = `You are scripting ONE scene of a GTOCentral poker Reel: a preflop range matrix.
+The visual is a 13x13 hand matrix for the exact preflop action sequence supplied.
+Write a tight, energetic voiceover (2-3 short sentences) plus a short on-screen subtext (<= 8 words) for serious poker players.
+Rules:
+- Treat the action sequence as the source of truth for which preflop decision this matrix represents.
+- If the sequence says "no action yet", describe it as the first/root preflop decision, not as a postflop spot.
+- Explain the strategic shape of the range: how much it raises, calls/checks, folds, and which hands are most active.
+- You may cite exact figures listed in the matrix facts, and ONLY those figures. Never invent or re-round other numbers.
+- Do not mention missing data, APIs, load IDs, or "this scene shows". No emojis, no fluff.`;
+
+export async function narratePreflopMatrix({
+  topic,
+  concept,
+  headline,
+  preflopLine,
+  rangeGrid,
+}: {
+  topic: string;
+  concept: string;
+  headline?: string;
+  preflopLine?: string[];
+  rangeGrid?: RangeCell[];
+}): Promise<{ voiceover: string; subtext: string }> {
+  const facts = preflopMatrixFacts(preflopLine, rangeGrid);
+  const completion = await openai.chat.completions.create({
+    model: config.textModel,
+    messages: [
+      { role: "system", content: PREFLOP_MATRIX_SYSTEM },
+      {
+        role: "user",
+        content: `Topic: ${topic}
+Concept: ${concept}
+Current headline: ${headline || "(none)"}
+
+Matrix facts:
+${facts}
+
+Write the preflop matrix voiceover + subtext.`,
+      },
+    ],
+    response_format: { type: "json_schema", json_schema: SCENE_SCRIPT_SCHEMA },
   });
   const j = JSON.parse(completion.choices[0]?.message?.content ?? "{}");
   return { voiceover: String(j.voiceover ?? ""), subtext: String(j.subtext ?? "") };
