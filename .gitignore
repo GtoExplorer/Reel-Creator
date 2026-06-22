@@ -4,3 +4,4 @@ public/reels
 !public/brand
 .next
 *.log
+out/

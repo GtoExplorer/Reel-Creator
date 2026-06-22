@@ -7,8 +7,7 @@ const TYPES: SceneType[] = [
   "hook",
   "preflopMatrix",
   "flowchart",
-  "boardSelections",
-  "strategyBars",
+  "barCharts",
   "freqBars",
   "cta",
 ];
@@ -50,6 +49,7 @@ export function SceneList({
             topic={topic}
             concept={concept}
             loadId={draft.loadId}
+            gameId={draft.gameId}
             street={draft.street}
             clip={clips[i] ?? null}
             onChange={(patch) => onSceneChange(i, patch)}

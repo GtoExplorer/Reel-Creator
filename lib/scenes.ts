@@ -3,16 +3,19 @@ import { hasPerNodeLines, voiceoverFromLines, timeCameraToLines } from "@/src/ca
 
 // Build a fresh scene of any type, pulling its data from the draft's asset pool
 // so add-scene needs no new draft generation. Pure + client-safe.
-export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number): DraftScene {
+export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number, gameId?: string): DraftScene {
   const p = pool ?? {};
   const base: DraftScene = { type: t, headline: "", subtext: "", voiceover: "" };
+  const barCategories = p.boardCategories ?? p.categories;
+  const focusBar = barCategories?.[Math.floor((barCategories.length - 1) / 2)];
   switch (t) {
     case "preflopMatrix":
-      return { ...base, loadId, rangeGrid: p.preflopGrid, headline: p.preflopLabel ?? "Preflop Range" };
+      return { ...base, loadId, gameId, rangeGrid: p.preflopGrid, headline: p.preflopLabel ?? "Preflop Range" };
     case "flowchart":
       return {
         ...base,
         loadId,
+        gameId,
         flowchart: p.flowchart,
         nodes: p.nodes ?? [],
         camera: [
@@ -21,12 +24,19 @@ export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number): Draf
         ],
         headline: "Decision Tree",
       };
-    case "boardSelections":
-      return { ...base, loadId, categories: p.boardCategories ?? p.categories, category: "flop_top_card_rank", headline: p.boardLabel ?? "Board Selections" };
-    case "strategyBars":
-      return { ...base, loadId, categories: p.categories, category: "sdv", headline: "Strategy by Hand Strength" };
+    case "barCharts":
+      return { ...base, loadId, gameId, categories: barCategories, category: p.boardCategories ? "flop_top_card_rank" : "sdv", headline: p.boardLabel ?? "Bar Charts" };
     case "freqBars":
-      return { ...base, loadId, freqBars: p.freqBars, headline: p.highlightLabel ?? "Frequencies" };
+      return {
+        ...base,
+        loadId,
+        gameId,
+        category: p.boardCategories ? "flop_top_card_rank" : "sdv",
+        categories: barCategories,
+        barValue: focusBar?.category ?? p.highlightLabel,
+        freqBars: focusBar?.actions ?? p.freqBars,
+        headline: focusBar?.category ?? p.highlightLabel ?? "Frequencies",
+      };
     case "hook":
       return { ...base, headline: "New hook" };
     case "cta":

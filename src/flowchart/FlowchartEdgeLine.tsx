@@ -31,7 +31,12 @@ export function FlowchartEdgeLine({
         <EdgeLabelRenderer>
           <div
             className="nodrag nopan"
-            style={{ position: "absolute", transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, pointerEvents: "none" }}
+            style={{
+              position: "absolute",
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              pointerEvents: "none",
+              zIndex: active ? 1000 : 1,
+            }}
           >
             <div
               style={{
@@ -40,13 +45,15 @@ export function FlowchartEdgeLine({
                 gap: 6,
                 borderRadius: 9999,
                 border: `1px solid ${active ? "rgba(208,171,29,0.7)" : "#292929"}`,
-                background: active ? "#242526" : "rgba(36,37,38,0.95)",
+                background: active ? "#242526" : "rgba(36,37,38,0.98)",
                 padding: "6px 12px",
                 fontSize: 20,
                 fontWeight: 600,
                 color: active ? "#ededed" : "#a3a3a3",
                 whiteSpace: "nowrap",
-                boxShadow: active ? "0 0 0 1px rgba(208,171,29,0.25), 0 4px 6px -1px rgba(0,0,0,0.4)" : "0 4px 6px -1px rgba(0,0,0,0.3)",
+                boxShadow: active
+                  ? "0 0 0 3px #191a1a, 0 0 0 4px rgba(208,171,29,0.45), 0 4px 6px -1px rgba(0,0,0,0.45)"
+                  : "0 0 0 2px #191a1a, 0 4px 6px -1px rgba(0,0,0,0.3)",
               }}
             >
               <span style={{ width: 6, height: 6, borderRadius: 9999, background: active ? "#d0ab1d" : "#858585", flexShrink: 0, display: "block" }} />

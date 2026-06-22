@@ -13,7 +13,7 @@ import {
   type FlowchartLayout,
   type FlowNode,
 } from "../types.js";
-import { fetchSpotData, loadIdFromLine } from "../data/solverApi.js";
+import { fetchSpotData, lineFromLoadId, loadIdFromLine } from "../data/solverApi.js";
 import { buildFlowchart } from "../flowchart/build.js";
 import { generateStoryboard } from "../openai/script.js";
 import { synthesizeVoiceover } from "../openai/voiceover.js";
@@ -66,10 +66,13 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   // Resolve the load id (entered directly, or navigated from the preflop line),
   // then build the decision tree natively from the API — no browser, no Explorer.
   let loadId = brief.loadId;
+  let gameId = brief.gameId;
+  let preflopLine = brief.preflopLine;
   if (!loadId && brief.preflopLine?.length) {
     const found = await loadIdFromLine(brief.preflopLine, brief.gameId);
     if (found) {
       loadId = found.loadId;
+      gameId = found.gameId;
       console.log(`  • Resolved loadId ${loadId} from the line`);
     } else {
       console.warn("  ⚠ couldn't resolve a load id from the line");
@@ -77,6 +80,15 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   }
 
   console.log(`  • Building flowchart from load ${loadId ?? "(none)"}`);
+  if (loadId && !gameId) {
+    const found = await lineFromLoadId(loadId);
+    if (found) {
+      gameId = found.gameId;
+      preflopLine = preflopLine ?? found.line;
+      console.log(`  - Resolved preflop game ${gameId} from load ${loadId}`);
+    }
+  }
+
   let fcLayout: FlowchartLayout | undefined;
   let fcNodes: FlowNode[] | undefined;
   if (loadId) {
@@ -91,25 +103,25 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   }
 
   console.log("  • Fetching solver data");
-  const spot = await fetchSpotData({ ...brief, loadId });
+  const resolvedBrief = { ...brief, loadId, gameId, preflopLine };
+  const spot = await fetchSpotData(resolvedBrief);
 
   console.log("  • Writing script + storyboard (OpenAI)");
   const storyboard = await generateStoryboard(brief, summariseSpot(spot));
 
-  const strategyCat = brief.category ?? "sdv";
   const boardCat = brief.boardCategory ?? "flop_top_card_rank";
-  const resolve = (t: SceneType): Pick<DraftScene, "type" | "flowchart" | "categories" | "freqBars" | "rangeGrid" | "category"> => {
+  const barCategories = spot.boardCategories ?? spot.categories;
+  const focusBar = barCategories[Math.floor((barCategories.length - 1) / 2)];
+  const resolve = (t: SceneType): Pick<DraftScene, "type" | "flowchart" | "categories" | "freqBars" | "rangeGrid" | "category" | "barValue"> => {
     switch (t) {
       case "preflopMatrix":
-        return spot.preflopGrid?.length ? { type: t, rangeGrid: spot.preflopGrid } : { type: "strategyBars", categories: spot.categories, category: strategyCat };
+        return spot.preflopGrid?.length ? { type: t, rangeGrid: spot.preflopGrid } : { type: "barCharts", categories: spot.boardCategories ?? spot.categories, category: boardCat };
       case "flowchart":
-        return fcLayout ? { type: t, flowchart: fcLayout } : { type: "strategyBars", categories: spot.categories, category: strategyCat };
-      case "boardSelections":
-        return { type: t, categories: spot.boardCategories ?? spot.categories, category: boardCat };
-      case "strategyBars":
-        return { type: t, categories: spot.categories, category: strategyCat };
+        return fcLayout ? { type: t, flowchart: fcLayout } : { type: "barCharts", categories: spot.boardCategories ?? spot.categories, category: boardCat };
+      case "barCharts":
+        return { type: t, categories: barCategories, category: boardCat };
       case "freqBars":
-        return { type: t, freqBars: spot.highlightBars };
+        return { type: t, categories: barCategories, category: boardCat, barValue: focusBar?.category, freqBars: focusBar?.actions ?? spot.highlightBars };
       default:
         return { type: t };
     }
@@ -117,9 +129,17 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
 
   const scenes: DraftScene[] = storyboard.scenes.map((s) => {
     const r = resolve(s.type);
-    const headline = r.type === "preflopMatrix" && spot.preflopLabel ? spot.preflopLabel : s.headline;
+    const headline =
+      r.type === "preflopMatrix" && spot.preflopLabel
+        ? spot.preflopLabel
+        : r.type === "freqBars" && r.barValue
+          ? r.barValue
+          : s.headline;
     const base: DraftScene = { ...r, headline, subtext: s.subtext, voiceover: s.voiceover };
-    if (["flowchart", "preflopMatrix", "boardSelections", "strategyBars", "freqBars"].includes(r.type)) base.loadId = loadId;
+    if (["flowchart", "preflopMatrix", "barCharts", "freqBars"].includes(r.type)) {
+      base.loadId = loadId;
+      base.gameId = gameId;
+    }
     if (r.type === "flowchart") {
       // Default camera: open on the full tree, then a gentle centred push-in.
       base.nodes = fcNodes;
@@ -152,6 +172,7 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     topic: brief.topic,
     concept: brief.concept,
     loadId,
+    gameId,
     street: brief.street ?? "flop",
     pool,
     scenes,
@@ -207,9 +228,12 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       headline: e.headline ?? d.headline,
       subtext: e.subtext ?? d.subtext,
       voiceover,
+      customAudio: e.customAudio ?? d.customAudio,
       loadId: d.loadId,
+      gameId: d.gameId,
       filters: d.filters,
       category: d.category,
+      barValue: d.barValue,
       categories: d.categories,
       freqBars: d.freqBars,
       rangeGrid: d.rangeGrid,

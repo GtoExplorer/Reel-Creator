@@ -57,7 +57,7 @@ function buildEdges(layout: FlowchartLayout, active: Set<string>): Edge[] {
         type: "flowchartEdge",
         data: { label: e.label, active: active.has(id) },
         markerEnd: { type: MarkerType.ArrowClosed, color: active.has(id) ? "#d0ab1d" : "#454545", width: 16, height: 16 },
-        zIndex: active.has(id) ? 10 : 0,
+        zIndex: active.has(id) ? 1 : 0,
       };
     });
 }

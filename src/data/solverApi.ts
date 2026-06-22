@@ -197,6 +197,16 @@ type WizardNode = {
   };
 };
 
+type LoadExitMatch = {
+  line: string[];
+  nodeKey: string;
+  exitActionId: string;
+};
+
+function sortGameIds(games: { id: string }[]): string[] {
+  return games.map((g) => g.id).filter(Boolean).sort((a, b) => a.localeCompare(b));
+}
+
 function gridFromSolutions(handSolutions: Record<string, { strategy: Record<string, number> }>): RangeCell[] {
   const grid: RangeCell[] = [];
   for (let i = 0; i < 13; i++) {
@@ -227,7 +237,7 @@ async function fetchPreflopRange(brief: Pick<Brief, "gameId" | "preflopLine">): 
       const gamesRes = await authGet(`/games/`);
       if (!gamesRes.ok) return null;
       const games = (await gamesRes.json()) as { id: string }[];
-      gameId = games[0]?.id;
+      gameId = sortGameIds(games)[0];
     }
     if (!gameId) return null;
 
@@ -276,16 +286,46 @@ async function fetchPreflopRange(brief: Pick<Brief, "gameId" | "preflopLine">): 
 // action ids that reaches it back out as display labels (the preflop line). The
 // tree node keys ARE the action path ("0" = root, "F-F-F-F", …); each node's
 // next_actions[aid].postflop_id is the load that taking that action produces.
-function findLineInTree(strategies: Record<string, WizardNode>, loadId: number): string[] | null {
-  for (const [nodeKey, node] of Object.entries(strategies)) {
+function findLoadExitInTree(strategies: Record<string, WizardNode>, loadId: number): LoadExitMatch | null {
+  const matches: LoadExitMatch[] = [];
+  for (const nodeKey of Object.keys(strategies).sort((a, b) => a.localeCompare(b))) {
+    const node = strategies[nodeKey];
     const next = node.solutions?.next_actions;
     if (!next) continue;
-    for (const [aid, info] of Object.entries(next)) {
+    for (const [aid, info] of Object.entries(next).sort(([a], [b]) => a.localeCompare(b))) {
       if (Number((info as { postflop_id?: unknown }).postflop_id) === loadId) {
         const prefix = nodeKey === "0" ? [] : nodeKey.split("-");
-        return [...prefix, aid].map(actionDisplayName);
+        const lineIds = [...prefix, aid];
+        matches.push({
+          line: lineIds.map(actionDisplayName),
+          nodeKey,
+          exitActionId: aid,
+        });
       }
     }
+  }
+  return matches.sort((a, b) => `${a.nodeKey}/${a.exitActionId}`.localeCompare(`${b.nodeKey}/${b.exitActionId}`))[0] ?? null;
+}
+
+async function findLoadExit(
+  loadId: number,
+  gameId?: string
+): Promise<{ match: LoadExitMatch; gameId: string; strategies: Record<string, WizardNode> } | null> {
+  let gameIds: string[] = [];
+  if (gameId) {
+    gameIds = [gameId];
+  } else {
+    const gamesRes = await authGet(`/games/`);
+    if (!gamesRes.ok) return null;
+    gameIds = sortGameIds((await gamesRes.json()) as { id: string }[]);
+  }
+
+  for (const gid of gameIds) {
+    const res = await authGet(`/preflop_wizard_strats/${gid}`);
+    if (!res.ok) continue;
+    const strategies = (await res.json()) as Record<string, WizardNode>;
+    const match = findLoadExitInTree(strategies, loadId);
+    if (match) return { match, gameId: gid, strategies };
   }
   return null;
 }
@@ -298,23 +338,8 @@ export async function lineFromLoadId(
   try {
     // A load lives in exactly one game's tree, but we don't know which — search
     // every game (most loads resolve in the first one or two).
-    let gameIds: string[] = [];
-    if (gameId) {
-      gameIds = [gameId];
-    } else {
-      const gamesRes = await authGet(`/games/`);
-      if (!gamesRes.ok) return null;
-      gameIds = ((await gamesRes.json()) as { id: string }[]).map((g) => g.id).filter(Boolean);
-    }
-
-    for (const gid of gameIds) {
-      const res = await authGet(`/preflop_wizard_strats/${gid}`);
-      if (!res.ok) continue;
-      const strategies = (await res.json()) as Record<string, WizardNode>;
-      const line = findLineInTree(strategies, loadId);
-      if (line) return { line, gameId: gid };
-    }
-    return null;
+    const found = await findLoadExit(loadId, gameId);
+    return found ? { line: found.match.line, gameId: found.gameId } : null;
   } catch (e) {
     console.warn("[solverApi] lineFromLoadId failed:", (e as Error).message);
     return null;
@@ -325,11 +350,30 @@ export async function fetchPreflopMatrixForLoad(
   loadId: number,
   gameId?: string
 ): Promise<{ grid: RangeCell[]; label?: string; line: string[]; gameId: string } | null> {
-  const found = await lineFromLoadId(loadId, gameId);
-  if (!found) return null;
-  const pre = await fetchPreflopRange({ preflopLine: found.line, gameId: found.gameId });
-  if (!pre) return null;
-  return { ...pre, line: found.line, gameId: found.gameId };
+  if (!config.explorerSessionSecret || !config.explorerLoginEmail) return null;
+  try {
+    const found = await findLoadExit(loadId, gameId);
+    if (!found) return null;
+
+    // Match the Explorer: when the selected preflop action exits to a postflop
+    // load, the visible preflop matrix is the parent decision node.
+    const node = found.strategies[found.match.nodeKey];
+    const handSolutions = node?.solutions?.hand_solutions;
+    if (!handSolutions) return null;
+
+    const player = node?.player_node?.player;
+    const action = actionDisplayName(found.match.exitActionId);
+    const label = player ? `${positionName(player)} ${action} Range` : `${action} Range`;
+    return {
+      grid: gridFromSolutions(handSolutions),
+      label,
+      line: found.match.line,
+      gameId: found.gameId,
+    };
+  } catch (e) {
+    console.warn("[solverApi] preflop matrix for load failed:", (e as Error).message);
+    return null;
+  }
 }
 
 // Forward lookup: navigate the wizard tree along a display-label line and return
@@ -342,7 +386,7 @@ export async function loadIdFromLine(line: string[], gameId?: string): Promise<{
     else {
       const gamesRes = await authGet(`/games/`);
       if (!gamesRes.ok) return null;
-      gameIds = ((await gamesRes.json()) as { id: string }[]).map((g) => g.id).filter(Boolean);
+      gameIds = sortGameIds((await gamesRes.json()) as { id: string }[]);
     }
     for (const gid of gameIds) {
       const res = await authGet(`/preflop_wizard_strats/${gid}`);
@@ -387,7 +431,10 @@ export async function fetchSpotData(brief: Brief): Promise<SpotData> {
 
   // Native preflop matrix + board-selection bars (best-effort; mock on failure).
   const boardCat = brief.boardCategory ?? "flop_top_card_rank";
-  const [pre, boardCats] = await Promise.all([fetchPreflopRange(brief), fetchAggregate(brief, boardCat)]);
+  const [pre, boardCats] = await Promise.all([
+    brief.loadId ? fetchPreflopMatrixForLoad(brief.loadId, brief.gameId) : fetchPreflopRange(brief),
+    fetchAggregate(brief, boardCat),
+  ]);
   spot.preflopGrid = pre?.grid ?? buildMockGrid();
   spot.preflopLabel = pre?.label;
   // Card-rank properties were already normalized by fetchAggregate.

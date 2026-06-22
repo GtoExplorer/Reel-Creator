@@ -24,12 +24,15 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(
 // Rebuild an editable draft from a finished reel's manifest (for reels made
 // before draft.json existed, or to re-edit any reel).
 function manifestToDraft(m: { briefId: string; title: string; hashtags: string[]; topic?: string; concept?: string; scenes: Record<string, unknown>[] }) {
+  const legacyType = (t: unknown) => (t === "boardSelections" || t === "strategyBars" ? "barCharts" : t);
   const scenes = m.scenes.map((s) => ({
-    type: s.type,
+    type: legacyType(s.type),
     headline: s.headline,
     subtext: s.subtext,
     voiceover: s.voiceover,
     categories: s.categories,
+    category: s.category,
+    barValue: s.barValue,
     freqBars: s.freqBars,
     rangeGrid: s.rangeGrid,
     image: s.image,
@@ -46,9 +49,9 @@ function manifestToDraft(m: { briefId: string; title: string; hashtags: string[]
   for (const s of scenes as Record<string, unknown>[]) {
     if (s.image) { pool.image = s.image; pool.imageW = s.imageW; pool.imageH = s.imageH; pool.nodes = s.nodes; }
     if (s.rangeGrid) { pool.preflopGrid = s.rangeGrid; pool.preflopLabel = s.headline; }
-    if (s.type === "boardSelections" && s.categories) { pool.boardCategories = s.categories; pool.boardLabel = s.headline; }
-    if (s.type === "strategyBars" && s.categories) { pool.categories = s.categories; }
-    if (s.freqBars) { pool.freqBars = s.freqBars; }
+    if (s.type === "barCharts" && s.categories) { pool.boardCategories = s.categories; pool.boardLabel = s.headline; pool.categories = s.categories; }
+    if (s.type === "freqBars" && s.categories) { pool.boardCategories = s.categories; pool.boardLabel = s.headline; pool.categories = s.categories; }
+    if (s.freqBars) { pool.freqBars = s.freqBars; pool.highlightLabel = s.barValue ?? s.headline; }
   }
   return { briefId: m.briefId, title: m.title, hashtags: m.hashtags, topic: m.topic, concept: m.concept, pool, scenes };
 }
@@ -157,6 +160,7 @@ const server = http.createServer(async (req, res) => {
         street: f.street || "flop",
         preflopLine: Array.isArray(f.preflopLine) && f.preflopLine.length ? f.preflopLine : undefined,
         loadId: f.loadId ? Number(f.loadId) : undefined,
+        gameId: f.gameId ? String(f.gameId) : undefined,
       });
     } catch (e) {
       res.writeHead(400, { "Content-Type": "text/plain" });
@@ -290,8 +294,7 @@ video.preview{width:260px;border-radius:12px;background:#000;display:block;margi
       <option value="hook">hook</option>
       <option value="preflopMatrix">preflopMatrix</option>
       <option value="flowchart">flowchart</option>
-      <option value="boardSelections">boardSelections</option>
-      <option value="strategyBars">strategyBars</option>
+      <option value="barCharts">barCharts</option>
       <option value="freqBars">freqBars</option>
       <option value="cta">cta</option>
     </select>
@@ -390,9 +393,8 @@ function makeScene(t){
   const p=draft.pool||{};const s={type:t,headline:'',subtext:'',voiceover:''};
   if(t==='preflopMatrix'){s.rangeGrid=p.preflopGrid;s.headline=p.preflopLabel||'Preflop Range';}
   else if(t==='flowchart'){s.image=p.image;s.imageW=p.imageW;s.imageH=p.imageH;s.nodes=p.nodes||[];s.camera=[{cx:0.5,cy:0.5,zoom:1},{cx:0.5,cy:0.5,zoom:1.2}];s.headline='Decision Tree';}
-  else if(t==='boardSelections'){s.categories=p.boardCategories||p.categories;s.headline=p.boardLabel||'Board Selections';}
-  else if(t==='strategyBars'){s.categories=p.categories;s.headline='Strategy by Hand Strength';}
-  else if(t==='freqBars'){s.freqBars=p.freqBars;s.headline=p.highlightLabel||'Frequencies';}
+  else if(t==='barCharts'){s.category=p.boardCategories?'flop_top_card_rank':'sdv';s.categories=p.boardCategories||p.categories;s.headline=p.boardLabel||'Bar Charts';}
+  else if(t==='freqBars'){const cats=p.boardCategories||p.categories;const focus=cats&&cats[Math.floor((cats.length-1)/2)];s.category=p.boardCategories?'flop_top_card_rank':'sdv';s.categories=cats;s.barValue=focus&&focus.category||p.highlightLabel;s.freqBars=focus&&focus.actions||p.freqBars;s.headline=s.barValue||'Frequencies';}
   else if(t==='hook'){s.headline='New hook';}
   else if(t==='cta'){s.headline='Explore on GTOCentral';}
   return s;

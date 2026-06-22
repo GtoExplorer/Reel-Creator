@@ -3,7 +3,7 @@ import type { DraftScene } from "@/src/types";
 import { CameraPathEditor } from "./CameraPathEditor";
 import { VoicePicker } from "./VoicePicker";
 import { SceneDataControls } from "./SceneDataControls";
-import { BarRescriptButton } from "./BarRescriptButton";
+import { SceneScriptButton } from "./SceneScriptButton";
 
 export function SceneCard({
   scene,
@@ -13,6 +13,7 @@ export function SceneCard({
   topic,
   concept,
   loadId,
+  gameId,
   street,
   clip,
   onChange,
@@ -27,6 +28,7 @@ export function SceneCard({
   topic: string;
   concept: string;
   loadId?: number;
+  gameId?: string;
   street?: string;
   clip: string | null;
   onChange: (patch: Partial<DraftScene>) => void;
@@ -35,8 +37,8 @@ export function SceneCard({
   onClip: (path: string) => void;
 }) {
   const hasCam = Array.isArray(scene.nodes);
-  const isBars = scene.type === "strategyBars" || scene.type === "boardSelections";
-  const hasDataControls = isBars || scene.type === "flowchart" || scene.type === "preflopMatrix";
+  const isBars = scene.type === "barCharts";
+  const hasDataControls = isBars || scene.type === "freqBars" || scene.type === "flowchart" || scene.type === "preflopMatrix";
   return (
     <div className="rounded-xl border border-line bg-elevated p-4">
       <div className="mb-1 flex items-center justify-between">
@@ -62,9 +64,9 @@ export function SceneCard({
       <input className="input" value={scene.subtext} onChange={(e) => onChange({ subtext: e.target.value })} />
       <div className="label">Voiceover</div>
       <textarea className="input" value={scene.voiceover} onChange={(e) => onChange({ voiceover: e.target.value })} />
+      <SceneScriptButton scene={scene} topic={topic} concept={concept} onChange={onChange} />
 
-      {hasDataControls && <SceneDataControls scene={scene} defaultLoadId={loadId} street={street} onChange={onChange} />}
-      {isBars && <BarRescriptButton scene={scene} topic={topic} concept={concept} onChange={onChange} />}
+      {hasDataControls && <SceneDataControls scene={scene} defaultLoadId={loadId} defaultGameId={gameId} street={street} onChange={onChange} />}
 
       {hasCam && <CameraPathEditor scene={scene} onChange={onChange} topic={topic} concept={concept} />}
 

@@ -12,7 +12,7 @@ export const FreqBarsScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
       <div style={{ fontSize: 56, fontWeight: 800, color: theme.text, textAlign: "center", marginBottom: 80, letterSpacing: -1 }}>
-        {scene.headline || "Action frequencies"}
+        {scene.headline || scene.barValue || "Action frequencies"}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 52 }}>
         {bars.map((b, i) => {

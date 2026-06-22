@@ -46,17 +46,22 @@ export function manifestToDraft(m: {
   topic?: string;
   concept?: string;
   loadId?: number;
+  gameId?: string;
   street?: string;
   scenes: Record<string, unknown>[];
 }) {
+  const legacyType = (t: unknown) => (t === "boardSelections" || t === "strategyBars" ? "barCharts" : t);
   const scenes = m.scenes.map((s) => ({
-    type: s.type,
+    type: legacyType(s.type),
     headline: s.headline,
     subtext: s.subtext,
     voiceover: s.voiceover,
+    customAudio: s.customAudio,
     loadId: s.loadId,
+    gameId: s.gameId,
     filters: s.filters,
     category: s.category,
+    barValue: s.barValue,
     categories: s.categories,
     freqBars: s.freqBars,
     rangeGrid: s.rangeGrid,
@@ -74,11 +79,11 @@ export function manifestToDraft(m: {
     if (s.image) { pool.image = s.image; pool.imageW = s.imageW; pool.imageH = s.imageH; pool.nodes = s.nodes; }
     if (s.flowchart) { pool.flowchart = s.flowchart; pool.nodes = s.nodes; }
     if (s.rangeGrid) { pool.preflopGrid = s.rangeGrid; pool.preflopLabel = s.headline; }
-    if (s.type === "boardSelections" && s.categories) { pool.boardCategories = s.categories; pool.boardLabel = s.headline; }
-    if (s.type === "strategyBars" && s.categories) { pool.categories = s.categories; }
-    if (s.freqBars) { pool.freqBars = s.freqBars; }
+    if (s.type === "barCharts" && s.categories) { pool.boardCategories = s.categories; pool.boardLabel = s.headline; pool.categories = s.categories; }
+    if (s.type === "freqBars" && s.categories) { pool.boardCategories = s.categories; pool.boardLabel = s.headline; pool.categories = s.categories; }
+    if (s.freqBars) { pool.freqBars = s.freqBars; pool.highlightLabel = s.barValue ?? s.headline; }
   }
-  return { briefId: m.briefId, title: m.title, hashtags: m.hashtags, topic: m.topic, concept: m.concept, loadId: m.loadId, street: m.street, pool, scenes };
+  return { briefId: m.briefId, title: m.title, hashtags: m.hashtags, topic: m.topic, concept: m.concept, loadId: m.loadId, gameId: m.gameId, street: m.street, pool, scenes };
 }
 
 // Delete a reel/draft: removes its out/<id> dir (draft.json, manifest, mp4) and
@@ -106,6 +111,14 @@ export function loadDraft(id: string): DraftManifest | null {
   if (fs.existsSync(dPath)) return DraftManifest.parse(JSON.parse(fs.readFileSync(dPath, "utf8")));
   if (fs.existsSync(mPath)) return DraftManifest.parse(manifestToDraft(JSON.parse(fs.readFileSync(mPath, "utf8"))));
   return null;
+}
+
+export function saveDraft(id: string, draft: unknown): DraftManifest {
+  const parsed = DraftManifest.parse(draft);
+  const dir = path.join(OUT, id);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, "draft.json"), JSON.stringify(parsed, null, 2));
+  return parsed;
 }
 
 export { OUT };

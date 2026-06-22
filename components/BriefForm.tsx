@@ -11,6 +11,7 @@ export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) 
   const [line, setLine] = useState("");
   const [board, setBoard] = useState("");
   const [loadId, setLoadId] = useState("");
+  const [gameId, setGameId] = useState("");
   const [deriving, setDeriving] = useState(false);
   const [log, setLog] = useState("");
   const [busy, setBusy] = useState(false);
@@ -21,8 +22,12 @@ export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) 
     setDeriving(true);
     try {
       const r = await fetch(`/api/line-from-load?loadId=${encodeURIComponent(loadId.trim())}`).then((res) => res.json());
-      if (r.line?.length) setLine(r.line.join(", "));
-      else alert(r.error || "Could not derive a line for that load id");
+      if (r.line?.length) {
+        setLine(r.line.join(", "));
+        setGameId(r.gameId || "");
+      } else {
+        alert(r.error || "Could not derive a line for that load id");
+      }
     } catch {
       alert("Derive failed - check the API proxy and credentials");
     }
@@ -48,6 +53,7 @@ export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) 
           board: board.trim() || undefined,
           preflopLine,
           loadId: loadId.trim() ? Number(loadId.trim()) : undefined,
+          gameId: gameId || undefined,
         },
         setLog
       );
@@ -81,7 +87,10 @@ export function BriefForm({ onDraft }: { onDraft: (d: DraftManifest) => void }) 
         <input
           className="input"
           value={loadId}
-          onChange={(e) => setLoadId(e.target.value)}
+          onChange={(e) => {
+            setLoadId(e.target.value);
+            setGameId("");
+          }}
           placeholder="68617"
           onKeyDown={(e) => e.key === "Enter" && deriveLine(e)}
         />

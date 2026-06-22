@@ -25,7 +25,7 @@ const sampleProps: RenderManifest = {
     scene({ type: "hook", headline: "You fold this way too much", subtext: "3-bet pots", vo: "Most players fold this spot far too often.", audioFile: "", durationSec: 3 }),
     scene({ type: "preflopMatrix", headline: "Start before the flop", subtext: "The opening range", vo: "It starts with the right preflop range.", audioFile: "", durationSec: 4, rangeGrid: buildMockGrid() }),
     scene({ type: "flowchart", headline: "The solver's decision tree", subtext: "Live on GTOCentral", vo: "Then the solver decides street by street.", audioFile: "", durationSec: 5, image: undefined }),
-    scene({ type: "boardSelections", headline: "Every board texture", subtext: "By flop high card", vo: "And it adapts to every board texture.", audioFile: "", durationSec: 4, categories: buildMockCategories() }),
+    scene({ type: "barCharts", headline: "Every board texture", subtext: "By flop high card", vo: "And it adapts to every board texture.", audioFile: "", durationSec: 4, categories: buildMockCategories() }),
     scene({ type: "cta", headline: "Explore it yourself", subtext: "Free on GTOCentral", vo: "Run the spot yourself on GTOCentral.", audioFile: "", durationSec: 3 }),
   ],
 };

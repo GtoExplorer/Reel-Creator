@@ -1,14 +1,14 @@
 import { z } from "zod";
 
-export const SceneType = z.enum([
+const CanonicalSceneType = z.enum([
   "hook",
   "flowchart",
   "preflopMatrix",
-  "boardSelections",
-  "strategyBars",
+  "barCharts",
   "freqBars",
   "cta",
 ]);
+export const SceneType = z.preprocess((v) => (v === "boardSelections" || v === "strategyBars" ? "barCharts" : v), CanonicalSceneType);
 export type SceneType = z.infer<typeof SceneType>;
 
 // What the LLM is allowed to produce: ordering + copy + narration ONLY.
@@ -133,7 +133,7 @@ export type FlowchartLayout = z.infer<typeof FlowchartLayout>;
 
 export const SpotData = z.object({
   label: z.string(),
-  categories: z.array(CategoryStrategy), // for the strategy-by-strength scene
+  categories: z.array(CategoryStrategy), // default bar-chart data
   highlightLabel: z.string(),
   highlightBars: z.array(FreqBar), // the single highlighted class for the freq scene
   preflopGrid: z.array(RangeCell).optional(), // native preflop range matrix
@@ -174,12 +174,15 @@ export const RenderScene = z.object({
   subtext: z.string(),
   voiceover: z.string(),
   audioFile: z.string(), // path relative to public/, e.g. "reels/<id>/scene_0.mp3"
+  customAudio: z.string().optional(), // recorded/uploaded source clip, if any
   durationSec: z.number(),
   words: z.array(WordTimestamp),
   loadId: z.number().optional(), // scene-level override; defaults to draft loadId
+  gameId: z.string().optional(), // preflop wizard game used to resolve this scene's load id
   filters: z.array(SceneFilter).optional(), // property/value filters applied to scene data fetches
   category: z.string().optional(), // for bar-chart scenes: which aggregate property is shown
-  categories: z.array(CategoryStrategy).optional(), // strategyBars / boardSelections scene
+  barValue: z.string().optional(), // for freqBars: which row/category from the aggregate is isolated
+  categories: z.array(CategoryStrategy).optional(), // barCharts scene
   freqBars: z.array(FreqBar).optional(), // freqBars scene
   rangeGrid: z.array(RangeCell).optional(), // preflopMatrix scene (native 13x13)
   image: z.string().optional(), // legacy captured asset (path relative to public/)
@@ -199,9 +202,12 @@ export const DraftScene = z.object({
   headline: z.string(),
   subtext: z.string(),
   voiceover: z.string(),
+  customAudio: z.string().optional(), // recorded/uploaded source clip, persisted with draft edits
   loadId: z.number().optional(), // scene-level override; defaults to draft loadId
+  gameId: z.string().optional(), // preflop wizard game used to resolve this scene's load id
   filters: z.array(SceneFilter).optional(), // property/value filters applied to scene data fetches
   category: z.string().optional(), // for bar-chart scenes: which aggregate property is shown
+  barValue: z.string().optional(), // for freqBars: which row/category from the aggregate is isolated
   categories: z.array(CategoryStrategy).optional(),
   freqBars: z.array(FreqBar).optional(),
   rangeGrid: z.array(RangeCell).optional(),
@@ -241,6 +247,7 @@ export const DraftManifest = z.object({
   topic: z.string().optional(), // brief context, kept for contextual re-scripting
   concept: z.string().optional(),
   loadId: z.number().optional(), // so the editor can refetch other properties
+  gameId: z.string().optional(), // preflop wizard game that disambiguates loadId -> line/matrix
   street: z.string().optional(),
   pool: DraftPool.optional(),
   scenes: z.array(DraftScene),

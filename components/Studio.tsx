@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { DraftManifest, DraftScene, RenderManifest, SceneType } from "@/src/types";
 import type { ReelSummary } from "@/src/pipeline/library";
@@ -16,6 +16,7 @@ import { LogConsole } from "./LogConsole";
 const ReelPlayer = dynamic(() => import("./ReelPlayer").then((m) => m.ReelPlayer), { ssr: false });
 
 type Health = "ok" | "error" | "checking";
+type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export function Studio() {
   const [mounted, setMounted] = useState(false);
@@ -30,6 +31,10 @@ export function Studio() {
   const [voicing, setVoicing] = useState(false);
   const [rendering, setRendering] = useState(false);
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const lastSavedDraft = useRef("");
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveSeq = useRef(0);
 
   const busy = voicing || rendering;
 
@@ -52,11 +57,13 @@ export function Studio() {
 
   function loadDraftIntoEditor(d: DraftManifest, id: string) {
     setDraft(d);
-    setClips(d.scenes.map(() => null));
+    setClips(d.scenes.map((s) => s.customAudio ?? null));
     setManifest(null);
     setFinalUrl(null);
     setBuildLog("");
     setActiveId(id);
+    lastSavedDraft.current = JSON.stringify(d);
+    setSaveStatus("saved");
     setStep("edit");
     loadReels(); // a freshly-drafted reel writes draft.json → show it in the sidebar now
   }
@@ -69,6 +76,8 @@ export function Studio() {
     setFinalUrl(null);
     setBuildLog("");
     setActiveId(null);
+    lastSavedDraft.current = "";
+    setSaveStatus("idle");
   }
 
   async function deleteReel(id: string) {
@@ -91,6 +100,37 @@ export function Studio() {
     loadDraftIntoEditor(await res.json(), id);
     window.scrollTo(0, 0);
   }
+
+  useEffect(() => {
+    if (!draft || !activeId || step !== "edit") return;
+    const body = JSON.stringify(draft);
+    if (body === lastSavedDraft.current) return;
+
+    setSaveStatus("saving");
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    const seq = ++saveSeq.current;
+    saveTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/draft/${encodeURIComponent(activeId)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ draft }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        if (seq === saveSeq.current) {
+          lastSavedDraft.current = body;
+          setSaveStatus("saved");
+        }
+        loadReels();
+      } catch {
+        if (seq === saveSeq.current) setSaveStatus("error");
+      }
+    }, 700);
+
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [draft, activeId, step, loadReels]);
 
   // ---- scene ops (keep clips in sync; any change invalidates the voiced mix) --
   const invalidate = () => setManifest(null);
@@ -121,12 +161,13 @@ export function Studio() {
     invalidate();
   }
   function addScene(t: SceneType) {
-    setDraft((d) => (d ? { ...d, scenes: [...d.scenes, makeScene(t, d.pool, d.loadId)] } : d));
+    setDraft((d) => (d ? { ...d, scenes: [...d.scenes, makeScene(t, d.pool, d.loadId, d.gameId)] } : d));
     setClips((c) => [...c, null]);
     invalidate();
   }
   function setClip(i: number, path: string) {
     setClips((c) => c.map((x, j) => (j === i ? path : x)));
+    setDraft((d) => (d ? { ...d, scenes: d.scenes.map((s, j) => (j === i ? { ...s, customAudio: path } : s)) } : d));
     invalidate();
   }
 
@@ -135,7 +176,10 @@ export function Studio() {
     if (!draft) return null;
     setVoicing(true);
     setBuildLog("Generating voiceovers…\n");
-    const edits: SceneEdit[] = clips.map((c) => (c ? { customAudio: c } : {}));
+    const edits: SceneEdit[] = draft.scenes.map((s, i) => {
+      const customAudio = clips[i] ?? s.customAudio;
+      return customAudio ? { customAudio } : {};
+    });
     let buf = "";
     try {
       buf = await streamFetch("/api/voice", { draft, edits }, setBuildLog);
@@ -186,7 +230,18 @@ export function Studio() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
             <div>
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">{draft.title}</h2>
+                <div>
+                  <h2 className="text-lg font-semibold">{draft.title}</h2>
+                  <div className={`mt-1 text-xs ${saveStatus === "error" ? "text-red-300" : "text-muted"}`}>
+                    {saveStatus === "saving"
+                      ? "Saving draft..."
+                      : saveStatus === "saved"
+                        ? "Draft saved"
+                        : saveStatus === "error"
+                          ? "Draft autosave failed"
+                          : ""}
+                  </div>
+                </div>
                 <button className="btn-ghost btn-mini" onClick={newReel}>
                   Start over
                 </button>

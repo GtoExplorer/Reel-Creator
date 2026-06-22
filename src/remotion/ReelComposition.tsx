@@ -9,7 +9,7 @@ import { SceneShell } from "./components/SceneShell.js";
 import { HookScene } from "./scenes/HookScene.js";
 import { CaptureScene } from "./scenes/CaptureScene.js";
 import { RangeGridScene } from "./scenes/RangeGridScene.js";
-import { StrategyBarsScene } from "./scenes/StrategyBarsScene.js";
+import { BarChartsScene } from "./scenes/BarChartsScene.js";
 import { FreqBarsScene } from "./scenes/FreqBarsScene.js";
 import { CtaScene } from "./scenes/CtaScene.js";
 
@@ -21,9 +21,8 @@ const SceneBody: React.FC<{ scene: RenderScene }> = ({ scene }) => {
       return <CaptureScene scene={scene} />; // native decision tree camera
     case "preflopMatrix":
       return <RangeGridScene scene={scene} />; // native 13x13
-    case "boardSelections":
-    case "strategyBars":
-      return <StrategyBarsScene scene={scene} />; // native stacked bars
+    case "barCharts":
+      return <BarChartsScene scene={scene} />; // native stacked bars
     case "freqBars":
       return <FreqBarsScene scene={scene} />;
     case "cta":

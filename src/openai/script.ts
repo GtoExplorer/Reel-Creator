@@ -17,7 +17,7 @@ const JSON_SCHEMA = {
           type: "object",
           additionalProperties: false,
           properties: {
-            type: { type: "string", enum: ["hook", "preflopMatrix", "flowchart", "boardSelections", "cta"] },
+            type: { type: "string", enum: ["hook", "preflopMatrix", "flowchart", "barCharts", "cta"] },
             voiceover: { type: "string", description: "Two short, punchy spoken sentences for this scene — keep it dense and energetic, no filler" },
             headline: { type: "string", description: "Punchy on-screen headline, <= 6 words" },
             subtext: { type: "string", description: "Optional supporting line, <= 8 words, may be empty" },
@@ -33,11 +33,11 @@ const JSON_SCHEMA = {
 const SYSTEM = `You are a senior short-form video scriptwriter for GTOCentral, a game-theory-optimal poker training tool.
 Write tight, confident, fast-paced Instagram Reels for serious poker players. Pack each scene with two punchy sentences — energetic and information-dense, never slow or padded.
 Rules:
-- Produce exactly these scenes in this order: one "hook", one "preflopMatrix", one "flowchart", one "boardSelections", one "cta".
+- Produce exactly these scenes in this order: one "hook", one "preflopMatrix", one "flowchart", one "barCharts", one "cta".
 - These scenes show the real GTOCentral product UI; speak to what each reveals, don't invent specific numbers:
   - "preflopMatrix": the preflop range chart (which hands to play and how).
   - "flowchart": the postflop decision tree (how the solver decides street by street).
-  - "boardSelections": how the strategy shifts across different board textures.
+  - "barCharts": how the strategy shifts across different board textures or selected bar-chart properties.
 - The hook must create curiosity or challenge a common mistake in the first 2 seconds.
 - You may cite the exact figures listed under FACTS, and ONLY those — never invent, estimate, or re-round any other number. Weave in at most one or two figures naturally; if no figure fits a scene, stay qualitative ("checks far more than you'd think").
 - The cta drives to GTOCentral to explore the spot themselves.
@@ -54,7 +54,7 @@ export async function generateStoryboard(brief: Brief, facts = "") {
       { role: "system", content: SYSTEM },
       {
         role: "user",
-        content: `Brief topic: ${brief.topic}\nConcept: ${brief.concept}\nSpot label: ${label}\nThe preflopMatrix, flowchart and boardSelections scenes each show real solver-backed visuals for this spot. Write copy that frames each view compellingly.${factsBlock}\n\nWrite the storyboard.`,
+        content: `Brief topic: ${brief.topic}\nConcept: ${brief.concept}\nSpot label: ${label}\nThe preflopMatrix, flowchart and barCharts scenes each show real solver-backed visuals for this spot. Write copy that frames each view compellingly.${factsBlock}\n\nWrite the storyboard.`,
       },
     ],
     response_format: { type: "json_schema", json_schema: JSON_SCHEMA },
@@ -205,6 +205,61 @@ export async function narrateBars(
       },
     ],
     response_format: { type: "json_schema", json_schema: BARS_SCHEMA },
+  });
+  const j = JSON.parse(completion.choices[0]?.message?.content ?? "{}");
+  return { voiceover: String(j.voiceover ?? ""), subtext: String(j.subtext ?? "") };
+}
+
+const SCENE_SCRIPT_SCHEMA = {
+  name: "scene_script",
+  strict: true,
+  schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      voiceover: { type: "string", description: "2-3 short, punchy spoken sentences for this scene" },
+      subtext: { type: "string", description: "Short on-screen support line, <= 8 words" },
+    },
+    required: ["voiceover", "subtext"],
+  },
+} as const;
+
+const SCENE_SCRIPT_SYSTEM = `You are scripting ONE scene of a GTOCentral poker Reel for serious poker players.
+Write a tight, energetic voiceover (2-3 short sentences) and a short on-screen subtext (<= 8 words).
+Use the supplied scene facts as the source of truth. You may cite exact figures listed there, and ONLY those figures.
+Do not invent solver numbers, don't mention missing data, and avoid meta phrasing like "this scene shows". No emojis, no fluff.`;
+
+export async function narrateSceneFromFacts({
+  topic,
+  concept,
+  sceneType,
+  headline,
+  facts,
+}: {
+  topic: string;
+  concept: string;
+  sceneType: string;
+  headline?: string;
+  facts: string;
+}): Promise<{ voiceover: string; subtext: string }> {
+  const completion = await openai.chat.completions.create({
+    model: config.textModel,
+    messages: [
+      { role: "system", content: SCENE_SCRIPT_SYSTEM },
+      {
+        role: "user",
+        content: `Topic: ${topic}
+Concept: ${concept}
+Scene type: ${sceneType}
+Current headline: ${headline || "(none)"}
+
+Scene facts:
+${facts || "(No numeric data supplied; stay qualitative and tied to the scene type.)"}
+
+Generate the scene script.`,
+      },
+    ],
+    response_format: { type: "json_schema", json_schema: SCENE_SCRIPT_SCHEMA },
   });
   const j = JSON.parse(completion.choices[0]?.message?.content ?? "{}");
   return { voiceover: String(j.voiceover ?? ""), subtext: String(j.subtext ?? "") };

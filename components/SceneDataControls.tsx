@@ -17,18 +17,23 @@ function filtersParam(filters: SceneFilter[]): string {
 export function SceneDataControls({
   scene,
   defaultLoadId,
+  defaultGameId,
   street,
   onChange,
 }: {
   scene: DraftScene;
   defaultLoadId?: number;
+  defaultGameId?: string;
   street?: string;
   onChange: (patch: Partial<DraftScene>) => void;
 }) {
-  const isBars = scene.type === "strategyBars" || scene.type === "boardSelections";
+  const isBars = scene.type === "barCharts";
+  const isFreq = scene.type === "freqBars";
+  const isAggregate = isBars || isFreq;
   const isFlowchart = scene.type === "flowchart";
   const isPreflop = scene.type === "preflopMatrix";
   const sceneLoadId = scene.loadId ?? defaultLoadId;
+  const sceneGameId = scene.gameId ?? defaultGameId;
   const filters = scene.filters ?? [];
 
   const [loadText, setLoadText] = useState(sceneLoadId ? String(sceneLoadId) : "");
@@ -63,7 +68,7 @@ export function SceneDataControls({
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
-  async function applyData(opts: { loadId?: number; filters?: SceneFilter[]; category?: string } = {}) {
+  async function applyData(opts: { loadId?: number; filters?: SceneFilter[]; category?: string; barValue?: string } = {}) {
     const nextLoadId = opts.loadId ?? parsedLoadId();
     const nextFilters = opts.filters ?? filters;
     if (!nextLoadId) {
@@ -74,10 +79,12 @@ export function SceneDataControls({
     if (isPreflop) {
       setBusy(true);
       try {
-        const r = await fetch(`/api/preflop-matrix?loadId=${nextLoadId}`).then((res) => res.json());
+        const gameParam = sceneGameId ? `&gameId=${encodeURIComponent(sceneGameId)}` : "";
+        const r = await fetch(`/api/preflop-matrix?loadId=${nextLoadId}${gameParam}`).then((res) => res.json());
         if (r.rangeGrid?.length) {
           onChange({
             loadId: nextLoadId,
+            gameId: r.gameId || sceneGameId,
             rangeGrid: r.rangeGrid as RangeCell[],
             headline: r.label || "Preflop Range",
           });
@@ -92,7 +99,7 @@ export function SceneDataControls({
       return;
     }
 
-    if (isBars) {
+    if (isAggregate) {
       const category = opts.category ?? scene.category;
       if (!category) {
         onChange({ loadId: nextLoadId, filters: nextFilters });
@@ -106,10 +113,25 @@ export function SceneDataControls({
           )}&filters=${filtersParam(nextFilters)}`
         ).then((res) => res.json());
         if (r.categories?.length) {
+          const categories = r.categories as CategoryStrategy[];
+          if (isFreq) {
+            const currentBar = opts.barValue ?? scene.barValue;
+            const selected = categories.find((c) => c.category === currentBar) ?? categories[0];
+            onChange({
+              loadId: nextLoadId,
+              filters: nextFilters,
+              categories,
+              category,
+              barValue: selected.category,
+              freqBars: selected.actions,
+              headline: selected.category || r.label || labelFor(category),
+            });
+            return;
+          }
           onChange({
             loadId: nextLoadId,
             filters: nextFilters,
-            categories: r.categories as CategoryStrategy[],
+            categories,
             category,
             headline: r.label || labelFor(category),
           });
@@ -193,7 +215,16 @@ export function SceneDataControls({
     }
   }
 
-  if (!isBars && !isFlowchart && !isPreflop) return null;
+  function setFocusBar(barValue: string) {
+    const selected = (scene.categories ?? []).find((c) => c.category === barValue);
+    if (selected) {
+      onChange({ barValue, freqBars: selected.actions, headline: selected.category });
+      return;
+    }
+    applyData({ barValue });
+  }
+
+  if (!isAggregate && !isFlowchart && !isPreflop) return null;
 
   return (
     <div className="mt-3 rounded-lg border border-line p-2.5">
@@ -204,12 +235,12 @@ export function SceneDataControls({
         </div>
         <div className="flex items-end">
           <button className="btn-ghost btn-mini mb-0.5" disabled={busy} onClick={() => applyData()}>
-            {busy ? "Loading..." : isFlowchart ? "Rebuild tree" : isPreflop ? "Rebuild matrix" : "Apply"}
+            {busy ? "Loading..." : isFlowchart ? "Rebuild tree" : isPreflop ? "Rebuild matrix" : isFreq ? "Rebuild bars" : "Apply"}
           </button>
         </div>
       </div>
 
-      {isBars && (
+      {isAggregate && (
         <>
           <div className="label">Bar chart property {busy && <span className="text-muted">- loading...</span>}</div>
           <select className="input" value={scene.category || ""} disabled={busy} onChange={(e) => applyData({ category: e.target.value })}>
@@ -224,6 +255,22 @@ export function SceneDataControls({
                   </option>
                 ))}
               </optgroup>
+            ))}
+          </select>
+        </>
+      )}
+
+      {isFreq && (
+        <>
+          <div className="label">Focus bar</div>
+          <select className="input" value={scene.barValue || ""} disabled={busy || !(scene.categories?.length)} onChange={(e) => setFocusBar(e.target.value)}>
+            <option value="" disabled>
+              Choose a bar...
+            </option>
+            {(scene.categories ?? []).map((c) => (
+              <option key={c.category} value={c.category}>
+                {c.category}
+              </option>
             ))}
           </select>
         </>
