@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import type { DraftScene, DrawingAnimation } from "@/src/types";
 import { orderCategoryRows } from "@/src/barRows";
 
@@ -22,6 +22,15 @@ function drawingSummary(d: DrawingAnimation): string {
   if (d.target.kind === "preflopHand") return d.target.hand;
   if (d.target.kind === "barRange") return d.target.from === d.target.to ? d.target.from : `${d.target.from} to ${d.target.to}`;
   return d.target.from === d.target.to ? d.target.from : `${d.target.from} to ${d.target.to}`;
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="block">
+      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</div>
+      {children}
+    </label>
+  );
 }
 
 export function DrawingAnimationControls({ scene, onChange }: { scene: DraftScene; onChange: (patch: Partial<DraftScene>) => void }) {
@@ -115,61 +124,79 @@ export function DrawingAnimationControls({ scene, onChange }: { scene: DraftScen
             </div>
             {!hasTag(scene.voiceover, d.id) && <div className="mt-1 text-xs text-amber-200">This tag is not in the voiceover yet.</div>}
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <select className="input" value={d.shape} onChange={(e) => updateDrawing(i, { shape: e.target.value as Shape })}>
-                <option value="rect">Rectangle</option>
-                <option value="circle">Circle</option>
-              </select>
-              <input
-                className="input"
-                type="number"
-                min="0.1"
-                step="0.05"
-                value={d.drawSec}
-                onChange={(e) => updateDrawing(i, { drawSec: Number(e.target.value) || 0.35 })}
-              />
+              <Field label="Shape">
+                <select className="input" value={d.shape} onChange={(e) => updateDrawing(i, { shape: e.target.value as Shape })}>
+                  <option value="rect">Rectangle</option>
+                  <option value="circle">Circle</option>
+                </select>
+              </Field>
+              <Field label="Draw duration (sec)">
+                <input
+                  className="input"
+                  type="number"
+                  min="0.1"
+                  step="0.05"
+                  value={d.drawSec}
+                  onChange={(e) => updateDrawing(i, { drawSec: Number(e.target.value) || 0.35 })}
+                />
+              </Field>
             </div>
           </div>
         ))}
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <select className="input" value={shape} onChange={(e) => setShape(e.target.value as Shape)}>
-          <option value="rect">Rectangle</option>
-          <option value="circle">Circle</option>
-        </select>
-        <input className="input" type="number" min="0.1" step="0.05" value={drawSec} onChange={(e) => setDrawSec(e.target.value)} />
+        <Field label="Shape">
+          <select className="input" value={shape} onChange={(e) => setShape(e.target.value as Shape)}>
+            <option value="rect">Rectangle</option>
+            <option value="circle">Circle</option>
+          </select>
+        </Field>
+        <Field label="Draw duration (sec)">
+          <input className="input" type="number" min="0.1" step="0.05" value={drawSec} onChange={(e) => setDrawSec(e.target.value)} />
+        </Field>
         {scene.type === "preflopMatrix" ? (
-          <input
-            className="input"
-            list={`${uid}-hands`}
-            value={hand}
-            onChange={(e) => setHand(e.target.value)}
-            placeholder="Hand, e.g. AKo"
-          />
+          <Field label="Hand">
+            <input
+              className="input"
+              list={`${uid}-hands`}
+              value={hand}
+              onChange={(e) => setHand(e.target.value)}
+              placeholder="Hand, e.g. AKo"
+            />
+          </Field>
         ) : (
           <>
-            <select className="input" value={from} onChange={(e) => setFrom(e.target.value)}>
-              <option value="">Top</option>
-              {rangeOptions.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
-            <select className="input" value={to} onChange={(e) => setTo(e.target.value)}>
-              <option value="">Bottom</option>
-              {rangeOptions.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
+            <Field label="Top row">
+              <select className="input" value={from} onChange={(e) => setFrom(e.target.value)}>
+                <option value="">Top</option>
+                {rangeOptions.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Bottom row">
+              <select className="input" value={to} onChange={(e) => setTo(e.target.value)}>
+                <option value="">Bottom</option>
+                {rangeOptions.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            </Field>
           </>
         )}
-        <input className="input" type="number" min="0" step="1" value={padding} onChange={(e) => setPadding(e.target.value)} placeholder="Padding" />
-        <button className="btn-ghost btn-mini" onClick={addDrawing}>
-          Add drawing
-        </button>
+        <Field label="Padding">
+          <input className="input" type="number" min="0" step="1" value={padding} onChange={(e) => setPadding(e.target.value)} placeholder="Padding" />
+        </Field>
+        <div className="flex items-end">
+          <button className="btn-ghost btn-mini w-full" onClick={addDrawing}>
+            Add drawing
+          </button>
+        </div>
       </div>
       <datalist id={`${uid}-hands`}>
         {handOptions.map((h) => (
