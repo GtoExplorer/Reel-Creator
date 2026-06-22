@@ -57,3 +57,37 @@ export function draftToPreview(draft: DraftManifest): RenderManifest {
   });
   return { briefId: draft.briefId, title: draft.title, hashtags: draft.hashtags, scenes };
 }
+
+function sameVoiceSource(draftScene: DraftScene, previewScene: RenderScene, voicedScene?: RenderScene): voicedScene is RenderScene {
+  if (!voicedScene?.audioFile) return false;
+  if (voicedScene.type !== draftScene.type) return false;
+  if ((draftScene.customAudio ?? "") !== (voicedScene.customAudio ?? "")) return false;
+  return previewScene.voiceover.trim() === voicedScene.voiceover.trim();
+}
+
+// Live editor preview after voices exist: keep generated audio/captions for any
+// scene whose spoken text has not changed, while reflecting current visual edits.
+// Edited scenes fall back to silent timing until voices are regenerated.
+export function draftToPreviewWithVoices(draft: DraftManifest, voiced: RenderManifest | null): RenderManifest {
+  const preview = draftToPreview(draft);
+  if (!voiced) return preview;
+
+  return {
+    ...preview,
+    music: voiced.music,
+    scenes: preview.scenes.map((scene, i) => {
+      const draftScene = draft.scenes[i];
+      const voicedScene = voiced.scenes[i];
+      if (!draftScene || !sameVoiceSource(draftScene, scene, voicedScene)) return scene;
+
+      const perNode = draftScene.type === "flowchart" && hasPerNodeLines(draftScene.camera);
+      return {
+        ...scene,
+        audioFile: voicedScene.audioFile,
+        durationSec: voicedScene.durationSec,
+        words: voicedScene.words,
+        camera: perNode ? timeCameraToLines(draftScene.camera ?? [], voicedScene.durationSec) : scene.camera,
+      };
+    }),
+  };
+}

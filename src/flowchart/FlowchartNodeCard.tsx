@@ -26,6 +26,9 @@ const C = {
   accent: "#d0ab1d",
 };
 const handleStyle: React.CSSProperties = { width: 8, height: 8, border: 0, background: "#6b7280", opacity: 0 };
+const hoverFx: React.CSSProperties = {
+  transition: "transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease",
+};
 
 const Segments: React.FC<{ preds: FreqBar[] }> = ({ preds }) => (
   <>
@@ -44,7 +47,12 @@ export function FlowchartNodeCard({ data, targetPosition, sourcePosition }: Node
 
   return (
     <>
-      <Handle type="target" position={targetPosition ?? Position.Top} style={handleStyle} isConnectable={false} />
+      {d.isRoot ? (
+        <p style={{ margin: "0 0 8px", textAlign: "center", fontSize: 21, lineHeight: 1.2, fontWeight: 500, color: C.muted }}>
+          Start by considering...
+        </p>
+      ) : null}
+      <Handle type="target" position={targetPosition ?? Position.Top} hidden={Boolean(d.isRoot)} style={handleStyle} isConnectable={false} />
       {split ? (
         <div
           style={{
@@ -55,6 +63,7 @@ export function FlowchartNodeCard({ data, targetPosition, sourcePosition }: Node
             background: C.surface2,
             padding: "12px 16px",
             boxShadow: "0 0 0 1px rgba(0,0,0,0.2), 0 10px 15px -3px rgba(0,0,0,0.5)",
+            ...hoverFx,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -94,6 +103,7 @@ export function FlowchartNodeCard({ data, targetPosition, sourcePosition }: Node
             background: C.surface,
             padding: "10px 12px",
             boxShadow: "0 0 0 1px rgba(0,0,0,0.2), 0 10px 15px -3px rgba(0,0,0,0.5)",
+            ...hoverFx,
           }}
         >
           <div style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
@@ -119,6 +129,25 @@ export function FlowchartNodeCard({ data, targetPosition, sourcePosition }: Node
                   <span style={{ flexShrink: 0 }}>{p.freq.toFixed(0)}%</span>
                 </span>
               ))}
+          </div>
+          <div
+            style={{
+              marginTop: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              borderTop: `1px solid ${C.line}`,
+              paddingTop: 8,
+              fontSize: 15,
+              color: C.muted2,
+              opacity: 0.6,
+            }}
+          >
+            click to explore
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted2} strokeWidth="3">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           </div>
         </div>
       )}

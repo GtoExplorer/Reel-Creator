@@ -5,7 +5,7 @@ import type { DraftManifest, DraftScene, RenderManifest, SceneType } from "@/src
 import type { ReelSummary } from "@/src/pipeline/library";
 import type { SceneEdit } from "@/src/pipeline/stages";
 import { parseStreamMarkerJson, streamFetch } from "@/lib/clientStream";
-import { makeScene, draftToPreview } from "@/lib/scenes";
+import { makeScene, draftToPreviewWithVoices } from "@/lib/scenes";
 import { Sidebar } from "./Sidebar";
 import { BriefForm } from "./BriefForm";
 import { SceneList } from "./SceneList";
@@ -24,6 +24,7 @@ export function Studio() {
   const [draft, setDraft] = useState<DraftManifest | null>(null);
   const [clips, setClips] = useState<(string | null)[]>([]);
   const [manifest, setManifest] = useState<RenderManifest | null>(null); // voiced
+  const [manifestStale, setManifestStale] = useState(false);
   const [reels, setReels] = useState<ReelSummary[]>([]);
   const [health, setHealth] = useState<Health>("checking");
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -59,6 +60,7 @@ export function Studio() {
     setDraft(d);
     setClips(d.scenes.map((s) => s.customAudio ?? null));
     setManifest(null);
+    setManifestStale(false);
     setFinalUrl(null);
     setBuildLog("");
     setActiveId(id);
@@ -73,6 +75,7 @@ export function Studio() {
     setDraft(null);
     setClips([]);
     setManifest(null);
+    setManifestStale(false);
     setFinalUrl(null);
     setBuildLog("");
     setActiveId(null);
@@ -133,7 +136,7 @@ export function Studio() {
   }, [draft, activeId, step, loadReels]);
 
   // ---- scene ops (keep clips in sync; any change invalidates the voiced mix) --
-  const invalidate = () => setManifest(null);
+  const invalidate = () => setManifestStale(true);
 
   function updateScene(i: number, patch: Partial<DraftScene>) {
     setDraft((d) => (d ? { ...d, scenes: d.scenes.map((s, j) => (j === i ? { ...s, ...patch } : s)) } : d));
@@ -193,11 +196,12 @@ export function Studio() {
       return null;
     }
     setManifest(mf);
+    setManifestStale(false);
     return mf;
   }
 
   async function render() {
-    const mf = manifest ?? (await voiceNow());
+    const mf = manifest && !manifestStale ? manifest : await voiceNow();
     if (!mf) return;
     setRendering(true);
     setFinalUrl(null);
@@ -217,7 +221,7 @@ export function Studio() {
     }
   }
 
-  const previewManifest = manifest ?? (draft ? draftToPreview(draft) : null);
+  const previewManifest = draft ? draftToPreviewWithVoices(draft, manifest) : null;
 
   return (
     <div className="flex">
@@ -265,12 +269,14 @@ export function Studio() {
               </div>
               <div className="text-xs text-muted">
                 {manifest
-                  ? "Previewing with voice + captions"
+                  ? manifestStale
+                    ? "Previewing saved voices where still valid - regenerate voices before render"
+                    : "Previewing with voice + captions"
                   : "Live preview (visuals only — generate voices for audio + captions)"}
               </div>
               <div className="flex gap-2">
                 <button className="btn-ghost flex-1" disabled={busy} onClick={voiceNow}>
-                  {voicing ? "Voicing…" : "Generate voices"}
+                  {voicing ? "Voicing…" : manifestStale && manifest ? "Regenerate voices" : "Generate voices"}
                 </button>
                 <button className="btn flex-1" disabled={busy} onClick={render}>
                   {rendering ? "Rendering…" : "Render MP4"}
