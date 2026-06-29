@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   const filters = parseSceneFilters(sp.get("filters"));
   if (!loadId) return NextResponse.json({ error: "loadId required" }, { status: 400 });
   try {
-    const r = await buildFlowchart(loadId, street, 5, filters, direction);
+    const r = await buildFlowchart(loadId, street, 7, filters, direction);
     if (!r) return NextResponse.json({ error: "No flowchart for that load/filter combination." }, { status: 404 });
     return NextResponse.json({ flowchart: r.layout, nodes: r.nodes });
   } catch (e) {
