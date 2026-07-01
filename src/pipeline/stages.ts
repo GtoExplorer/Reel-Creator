@@ -251,7 +251,7 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       zoom: e.zoom ?? d.zoom,
       panY: e.panY ?? d.panY,
       nodes: d.nodes,
-      camera: perNode ? timeCameraToLines(d.camera ?? [], durationSec) : d.camera,
+      camera: perNode ? timeCameraToLines(d.camera ?? [], words, durationSec) : d.camera,
       drawings,
       imageW: d.imageW,
       imageH: d.imageH,

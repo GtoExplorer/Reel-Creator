@@ -54,7 +54,7 @@ export function draftToPreview(draft: DraftManifest): RenderManifest {
     const vo = stripAnimationTags(taggedVo);
     const words = vo.trim().split(/\s+/).filter(Boolean).length;
     const durationSec = Math.max(2.5, words / 2.6);
-    const camera = perNode ? timeCameraToLines(s.camera ?? [], durationSec) : s.camera;
+    const camera = perNode ? timeCameraToLines(s.camera ?? [], [], durationSec) : s.camera;
     return { ...s, camera, voiceover: vo, audioFile: "", durationSec, words: [], drawings: [] };
   });
   return { briefId: draft.briefId, title: draft.title, hashtags: draft.hashtags, scenes };
@@ -88,7 +88,7 @@ export function draftToPreviewWithVoices(draft: DraftManifest, voiced: RenderMan
         audioFile: voicedScene.audioFile,
         durationSec: voicedScene.durationSec,
         words: voicedScene.words,
-        camera: perNode ? timeCameraToLines(draftScene.camera ?? [], voicedScene.durationSec) : scene.camera,
+        camera: perNode ? timeCameraToLines(draftScene.camera ?? [], voicedScene.words, voicedScene.durationSec) : scene.camera,
         drawings: resolveDrawingTimings(draftScene.drawings, draftScene.voiceover, voicedScene.words, voicedScene.durationSec),
       };
     }),

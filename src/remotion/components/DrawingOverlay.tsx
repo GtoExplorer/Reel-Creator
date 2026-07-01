@@ -47,11 +47,13 @@ export const TimedDrawingOverlay: React.FC<{
             extrapolateRight: "clamp",
           })
         );
-        const pad = drawing.padding ?? 12;
-        const x = box.x - pad;
-        const y = box.y - pad;
-        const w = box.w + pad * 2;
-        const h = box.h + pad * 2;
+        const padY = drawing.padding ?? 12;
+        const padLeft = drawing.paddingLeft ?? padY;
+        const padRight = drawing.paddingRight ?? padY;
+        const x = box.x - padLeft;
+        const y = box.y - padY;
+        const w = box.w + padLeft + padRight;
+        const h = box.h + padY * 2;
         const strokeDashoffset = 1 - progress;
 
         if (drawing.shape === "circle") {

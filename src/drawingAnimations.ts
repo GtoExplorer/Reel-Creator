@@ -1,16 +1,10 @@
 import type { DrawingAnimation, TimedDrawingAnimation, WordTimestamp } from "./types.js";
+import { alignReferenceTokens } from "./wordAlign.js";
 
 type TagRange = {
   id: string;
   startChar: number;
   endChar: number;
-};
-
-type Token = {
-  raw: string;
-  norm: string;
-  start: number;
-  end: number;
 };
 
 const TAG_RE = /<\s*(\/|\\)?\s*(a\d+)\s*>/gi;
@@ -91,48 +85,6 @@ export function resolveDrawingTimings(
       endSec: clamp(Math.max(endSec, startSec + drawSec + 0.15), 0, durationSec),
     }];
   });
-}
-
-function alignReferenceTokens(cleanText: string, words: WordTimestamp[]): { token: Token; wordIndex: number }[] {
-  const tokens = tokenize(cleanText);
-  const matches: { token: Token; wordIndex: number }[] = [];
-  let cursor = 0;
-
-  for (const token of tokens) {
-    const maxLookahead = Math.min(words.length, cursor + 10);
-    let match = -1;
-    for (let i = cursor; i < maxLookahead; i++) {
-      if (normalizeToken(words[i].word) === token.norm) {
-        match = i;
-        break;
-      }
-    }
-    if (match === -1) continue;
-    matches.push({ token, wordIndex: match });
-    cursor = match + 1;
-  }
-
-  return matches;
-}
-
-function tokenize(text: string): Token[] {
-  const tokens: Token[] = [];
-  for (const match of text.matchAll(/\S+/g)) {
-    const raw = match[0];
-    const norm = normalizeToken(raw);
-    if (!norm) continue;
-    const start = match.index ?? 0;
-    tokens.push({ raw, norm, start, end: start + raw.length });
-  }
-  return tokens;
-}
-
-function normalizeToken(token: string): string {
-  return token
-    .toLowerCase()
-    .replace(/[\u2018\u2019']/g, "")
-    .replace(/%/g, "")
-    .replace(/[^a-z0-9]+/g, "");
 }
 
 function charToSeconds(char: number, totalChars: number, durationSec: number): number {

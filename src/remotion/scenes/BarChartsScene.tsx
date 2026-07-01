@@ -9,8 +9,12 @@ import { type DrawingBox, TimedDrawingOverlay } from "../components/DrawingOverl
 const ROW_H = 52;
 const ROW_GAP = 24;
 const CHART_W = 1080;
-const HIGHLIGHT_X = 44;
-const HIGHLIGHT_W = CHART_W - HIGHLIGHT_X * 2;
+const BAR_W = 540;
+const COLUMN_GAP = 24;
+// The bar column is centered between two equal-width flex columns (label + spacer),
+// so its x offset depends on the surrounding column widths, not a fixed margin.
+const HIGHLIGHT_X = (CHART_W - BAR_W) / 2;
+const HIGHLIGHT_W = BAR_W;
 
 const KIND_LABEL: Record<FreqBar["kind"], string> = {
   raise: "Raise",
@@ -64,11 +68,11 @@ export const BarChartsScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
         {cats.map((c, i) => {
           const grow = spring({ frame, fps, delay: 4 + i * 4, config: { damping: 200 } });
           return (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)", alignItems: "center", columnGap: 24 }}>
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)", alignItems: "center", columnGap: COLUMN_GAP }}>
               <div style={{ textAlign: "right", whiteSpace: "nowrap", fontSize: 34, fontWeight: 700, color: theme.text }}>
                 {c.category}
               </div>
-              <div style={{ width: 540, height: 52, borderRadius: 12, backgroundColor: theme.surface, border: `1px solid ${theme.surfaceBorder}`, overflow: "hidden" }}>
+              <div style={{ width: BAR_W, height: 52, borderRadius: 12, backgroundColor: theme.surface, border: `1px solid ${theme.surfaceBorder}`, overflow: "hidden" }}>
                 <div style={{ display: "flex", height: "100%", width: "100%", transform: `scaleX(${grow})`, transformOrigin: "left" }}>
                   {sortActions(c.actions).map((a, j) => (
                     <div key={j} style={{ width: `${a.freq}%`, height: "100%", backgroundColor: actionColor(a.action) }} />

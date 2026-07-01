@@ -40,6 +40,8 @@ export function DrawingAnimationControls({ scene, onChange }: { scene: DraftScen
   const [shape, setShape] = useState<Shape>("rect");
   const [drawSec, setDrawSec] = useState("0.35");
   const [padding, setPadding] = useState("12");
+  const [paddingLeft, setPaddingLeft] = useState("");
+  const [paddingRight, setPaddingRight] = useState("");
   const [hand, setHand] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -65,11 +67,15 @@ export function DrawingAnimationControls({ scene, onChange }: { scene: DraftScen
   function addDrawing() {
     const parsedDrawSec = Number(drawSec);
     const parsedPadding = Number(padding);
+    const parsedPaddingLeft = Number(paddingLeft);
+    const parsedPaddingRight = Number(paddingRight);
     const base = {
       id: nextId,
       shape,
       drawSec: Number.isFinite(parsedDrawSec) && parsedDrawSec > 0 ? parsedDrawSec : 0.35,
       padding: Number.isFinite(parsedPadding) && parsedPadding >= 0 ? parsedPadding : 12,
+      ...(paddingLeft.trim() && Number.isFinite(parsedPaddingLeft) && parsedPaddingLeft >= 0 ? { paddingLeft: parsedPaddingLeft } : {}),
+      ...(paddingRight.trim() && Number.isFinite(parsedPaddingRight) && parsedPaddingRight >= 0 ? { paddingRight: parsedPaddingRight } : {}),
     };
 
     let drawing: DrawingAnimation | null = null;
@@ -91,6 +97,20 @@ export function DrawingAnimationControls({ scene, onChange }: { scene: DraftScen
 
   function updateDrawing(index: number, patch: Partial<DrawingAnimation>) {
     onChange({ drawings: drawings.map((d, i) => (i === index ? { ...d, ...patch } : d)) });
+  }
+
+  function updateHand(index: number, newHand: string) {
+    onChange({
+      drawings: drawings.map((d, i) => (i === index && d.target.kind === "preflopHand" ? { ...d, target: { ...d.target, hand: newHand } } : d)),
+    });
+  }
+
+  function updateRange(index: number, patch: { from?: string; to?: string }) {
+    onChange({
+      drawings: drawings.map((d, i) =>
+        i === index && (d.target.kind === "barRange" || d.target.kind === "freqRange") ? { ...d, target: { ...d.target, ...patch } } : d
+      ),
+    });
   }
 
   function deleteDrawing(index: number) {
@@ -138,6 +158,69 @@ export function DrawingAnimationControls({ scene, onChange }: { scene: DraftScen
                   step="0.05"
                   value={d.drawSec}
                   onChange={(e) => updateDrawing(i, { drawSec: Number(e.target.value) || 0.35 })}
+                />
+              </Field>
+              {d.target.kind === "preflopHand" ? (
+                <Field label="Hand">
+                  <input
+                    className="input"
+                    list={`${uid}-hands`}
+                    value={d.target.hand}
+                    onChange={(e) => updateHand(i, e.target.value)}
+                  />
+                </Field>
+              ) : (
+                <>
+                  <Field label="Top row">
+                    <select className="input" value={d.target.from} onChange={(e) => updateRange(i, { from: e.target.value })}>
+                      {rangeOptions.map((o) => (
+                        <option key={o} value={o}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Bottom row">
+                    <select className="input" value={d.target.to} onChange={(e) => updateRange(i, { to: e.target.value })}>
+                      {rangeOptions.map((o) => (
+                        <option key={o} value={o}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </>
+              )}
+              <Field label="Padding">
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={d.padding}
+                  onChange={(e) => updateDrawing(i, { padding: Number(e.target.value) || 0 })}
+                />
+              </Field>
+              <Field label="Padding left (override)">
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="same as padding"
+                  value={d.paddingLeft ?? ""}
+                  onChange={(e) => updateDrawing(i, { paddingLeft: e.target.value === "" ? undefined : Number(e.target.value) })}
+                />
+              </Field>
+              <Field label="Padding right (override)">
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="same as padding"
+                  value={d.paddingRight ?? ""}
+                  onChange={(e) => updateDrawing(i, { paddingRight: e.target.value === "" ? undefined : Number(e.target.value) })}
                 />
               </Field>
             </div>
@@ -191,6 +274,28 @@ export function DrawingAnimationControls({ scene, onChange }: { scene: DraftScen
         )}
         <Field label="Padding">
           <input className="input" type="number" min="0" step="1" value={padding} onChange={(e) => setPadding(e.target.value)} placeholder="Padding" />
+        </Field>
+        <Field label="Padding left (override)">
+          <input
+            className="input"
+            type="number"
+            min="0"
+            step="1"
+            value={paddingLeft}
+            onChange={(e) => setPaddingLeft(e.target.value)}
+            placeholder="same as padding"
+          />
+        </Field>
+        <Field label="Padding right (override)">
+          <input
+            className="input"
+            type="number"
+            min="0"
+            step="1"
+            value={paddingRight}
+            onChange={(e) => setPaddingRight(e.target.value)}
+            placeholder="same as padding"
+          />
         </Field>
         <div className="flex items-end">
           <button className="btn-ghost btn-mini w-full" onClick={addDrawing}>

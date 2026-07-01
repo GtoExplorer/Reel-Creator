@@ -138,7 +138,7 @@ export function CameraPathEditor({
                 </span>
                 <span className="flex shrink-0 items-center gap-1 text-sm text-muted">
                   zoom
-                  <input type="range" min={1} max={3} step={0.1} value={wp.zoom} onChange={(e) => updateWp(k, { zoom: +e.target.value })} />
+                  <input type="range" min={1} max={10} step={0.1} value={wp.zoom} onChange={(e) => updateWp(k, { zoom: +e.target.value })} />
                   <b className="text-text">{wp.zoom.toFixed(1)}x</b>
                 </span>
                 <button className="btn-ghost btn-mini shrink-0" onClick={() => delWp(k)}>

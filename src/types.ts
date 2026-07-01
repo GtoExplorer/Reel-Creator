@@ -190,7 +190,9 @@ export const DrawingAnimation = z.object({
   shape: z.enum(["rect", "circle"]).default("rect"),
   target: DrawingTarget,
   drawSec: z.number().positive().default(0.35),
-  padding: z.number().min(0).default(12),
+  padding: z.number().min(0).default(12), // vertical (top/bottom) padding, and horizontal fallback when left/right aren't set
+  paddingLeft: z.number().min(0).optional(), // overrides `padding` on the left side only
+  paddingRight: z.number().min(0).optional(), // overrides `padding` on the right side only
 });
 export type DrawingAnimation = z.infer<typeof DrawingAnimation>;
 
