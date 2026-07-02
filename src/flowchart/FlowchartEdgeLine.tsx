@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useState } from "react";
-import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, Position, useStore, type EdgeProps } from "@xyflow/react";
+import {
+  BaseEdge,
+  EdgeLabelRenderer,
+  getSmoothStepPath,
+  Position,
+  useInternalNode,
+  useStore,
+  type EdgeProps,
+  type InternalNode,
+} from "@xyflow/react";
 
 // Ported from gto-central-next FlowchartEdge.tsx — smooth-step connector + the
 // branch-condition chip near where the edge enters the target node. Inline styles
@@ -17,8 +26,30 @@ function splitLabel(s: string): [string, string] | null {
   return [s.slice(0, best), s.slice(best + 1)];
 }
 
+// Anchor point on a node's bounding box for the given side. Edges anchor off the
+// live node geometry rather than ReactFlow's handle bounds: handle offsets are
+// captured once at internals-update time, so when a card later grows (fonts load,
+// legend rows render) the stale offsets leave arrows hitting above centre.
+function nodeAnchor(node: InternalNode, side: Position): { x: number; y: number } {
+  const { x, y } = node.internals.positionAbsolute;
+  const w = node.measured?.width ?? 0;
+  const h = node.measured?.height ?? 0;
+  switch (side) {
+    case Position.Left:
+      return { x, y: y + h / 2 };
+    case Position.Right:
+      return { x: x + w, y: y + h / 2 };
+    case Position.Top:
+      return { x: x + w / 2, y };
+    default:
+      return { x: x + w / 2, y: y + h };
+  }
+}
+
 export function FlowchartEdgeLine({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -30,15 +61,27 @@ export function FlowchartEdgeLine({
   selected,
 }: EdgeProps) {
   const [hovered, setHovered] = useState(false);
-  const [edgePath] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, borderRadius: 12 });
+  const sourceNode = useInternalNode(source);
+  const targetNode = useInternalNode(target);
+  const s = sourceNode?.measured?.width ? nodeAnchor(sourceNode, sourcePosition) : { x: sourceX, y: sourceY };
+  const t = targetNode?.measured?.width ? nodeAnchor(targetNode, targetPosition) : { x: targetX, y: targetY };
+  const [edgePath] = getSmoothStepPath({
+    sourceX: s.x,
+    sourceY: s.y,
+    targetX: t.x,
+    targetY: t.y,
+    sourcePosition,
+    targetPosition,
+    borderRadius: 12,
+  });
   const d = data as { label?: string; active?: boolean } | undefined;
   const label = d?.label;
   const onPath = useContext(EdgeHighlightContext).has(id);
   const active = hovered || Boolean(selected) || Boolean(d?.active) || onPath;
   const zoom = useStore((s) => s.transform[2]);
   const lr = targetPosition === Position.Left;
-  const labelX = lr ? targetX - 105 : targetX;
-  const labelY = lr ? targetY : targetY - 80;
+  const labelX = lr ? t.x - 105 : t.x;
+  const labelY = lr ? t.y : t.y - 80;
   const lines = lr ? splitLabel(label ?? "") : null;
   const chipScale = active ? Math.min(6, Math.max(1.25, 0.575 / zoom)) : 1;
 

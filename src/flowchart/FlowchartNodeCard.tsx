@@ -48,7 +48,10 @@ export function FlowchartNodeCard({ data, targetPosition, sourcePosition }: Node
   return (
     <>
       {d.isRoot ? (
-        <p style={{ margin: "0 0 8px", textAlign: "center", fontSize: 21, lineHeight: 1.2, fontWeight: 500, color: C.muted }}>
+        // Overlaid above the card (not in flow) so the node's measured bounds stay
+        // card-only — edge anchors and dagre spacing key off those bounds, and
+        // build.ts's deterministic nodeHeight() doesn't include this label either.
+        <p style={{ position: "absolute", bottom: "100%", left: 0, right: 0, margin: "0 0 8px", textAlign: "center", fontSize: 21, lineHeight: 1.2, fontWeight: 500, color: C.muted }}>
           Start by considering...
         </p>
       ) : null}
