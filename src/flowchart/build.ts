@@ -14,7 +14,7 @@ const FLOP_DRAWS =
 const TURN_PROPS =
   "turn_tone,turn_paired,turn_n_to_flush,turn_top_card_rank,turn_second_card_rank,turn_third_card_rank,turn_fourth_card_rank,turn_top_gap,turn_second_gap,turn_third_gap,turn_rank,turn_double_flush_draw,turn_front_door_flush_hit,turn_back_door_flush_draw,turn_adds_pair,turn_pairs_top_card,turn_pairs_second_card,turn_pairs_third_card";
 
-function treeProperties(street: string): string {
+export function defaultTreeProperties(street: string): string {
   if (street === "turn") return `${SUBTREE_BASE},draw_2c_flush_draw,draw_1c_flush_draw,draw_straight_outs,${TURN_PROPS}`;
   return `${SUBTREE_BASE},${FLOP_DRAWS}`;
 }
@@ -36,28 +36,154 @@ function nodeHeight(kind: "split" | "strategy", label: string, preds: FreqBar[])
 }
 
 type RawChild = { to_node_id: number; description_human_readable?: string };
-type RawNode = {
+export type RawTreeNode = {
   node_id: number;
   feature?: string;
   prediction?: { action: string; frequency: number }[];
   children?: RawChild[];
+  parent_edge?: { parent_node_id: number; parent_edge_description: string };
 };
+
+// Fetch a decision (sub)tree. `q` is the Explorer-style path description
+// (~feature-op-value~...) that conditions a node-expansion subtree on the
+// branch decisions above it. The endpoint 500s without a properties list.
+export async function fetchTree(
+  loadId: number,
+  street: string,
+  leafs: number | string,
+  propertiesCsv?: string,
+  filters: SceneFilter[] = [],
+  q?: string
+): Promise<RawTreeNode[] | null> {
+  const properties = propertiesCsv || defaultTreeProperties(street);
+  const parts = [...filterQueryParts(filters), `properties=${properties}`, "pred_on_split=true"];
+  if (q) parts.push(`q=${q}`);
+  const res = await authGet(`/tree/${loadId}/${street}/${leafs}/?${parts.join("&")}`);
+  if (!res.ok) return null;
+  const body = await res.json();
+  const raw = (Array.isArray(body) ? body : Object.values(body ?? {})) as RawTreeNode[];
+  return raw.length > 0 ? raw : null;
+}
+
+// ---- tree-edit helpers (ported from the Explorer's Flowchart/ApiHandler) ----
+
+const OPERATOR: Record<string, string> = {
+  "==": "-eq-",
+  "<=": "-le-",
+  ">=": "-ge-",
+  "<": "-lt-",
+  ">": "-gt-",
+  "!=": "-ne-",
+};
+
+function descriptionClause(description: string, feature: string): string {
+  const conv = (v: string): string | number => {
+    if (!isNaN(Number(v))) return parseInt(v);
+    if (v.toLowerCase() === "yes") return "True";
+    if (v.toLowerCase() === "no") return "False";
+    return v;
+  };
+  const arr = description.split(" ");
+  if (arr.length === 1) return `~${feature}-eq-${conv(arr[0])}`;
+  if (arr.length === 2) return `~${feature}${OPERATOR[arr[0]]}${conv(arr[1])}`;
+  if (arr.length === 3 && arr[1] === "-")
+    return `~${feature}-ge-${conv(arr[0])}~${feature}-le-${conv(arr[2])}`;
+  return "";
+}
+
+// The `q=` filter expression describing a node's position in the tree — every
+// branch decision on the path from the root, built by walking parent edges.
+export function nodeDescription(raw: RawTreeNode[], nodeId: number): string {
+  let node = raw.find((n) => n.node_id === nodeId);
+  let description = "";
+  let parent = node?.parent_edge?.parent_node_id;
+  while (parent !== undefined && parent !== -1) {
+    const parentNode = raw.find((n) => n.node_id === parent);
+    if (!parentNode || !node?.parent_edge) break;
+    description = descriptionClause(node.parent_edge.parent_edge_description, parentNode.feature as string) + description;
+    node = parentNode;
+    parent = parentNode.parent_edge?.parent_node_id;
+  }
+  return description.substring(1);
+}
+
+// Collapse: drop every descendant of the node and clear its children, so the
+// graph rebuild can't resurrect the subtree and a re-click re-fetches fresh.
+export function pruneSubtree(raw: RawTreeNode[], nodeId: number): RawTreeNode[] {
+  const byId = new Map(raw.map((n) => [n.node_id, n]));
+  const toRemove = new Set<number>();
+  const stack = (byId.get(nodeId)?.children ?? []).map((c) => c.to_node_id);
+  while (stack.length) {
+    const id = stack.pop()!;
+    if (toRemove.has(id)) continue;
+    toRemove.add(id);
+    for (const c of byId.get(id)?.children ?? []) stack.push(c.to_node_id);
+  }
+  return raw
+    .filter((n) => !toRemove.has(n.node_id))
+    .map((n) => (n.node_id === nodeId ? { ...n, children: undefined } : n));
+}
+
+// Expand: splice a freshly-fetched subtree in at the clicked node. The fetched
+// tree's ids start at 0, so re-id them past the current max; its root takes the
+// clicked node's id, parent edge and prediction, so the join is seamless.
+export function mergeSubtree(raw: RawTreeNode[], nodeId: number, fetched: RawTreeNode[]): RawTreeNode[] {
+  const current = raw.find((n) => n.node_id === nodeId);
+  if (!current) return raw;
+  let working = current.children ? pruneSubtree(raw, nodeId) : [...raw];
+  const lastNodeID = working.reduce((m, n) => (n.node_id > m ? n.node_id : m), 0);
+  const parentEdge = current.parent_edge;
+  const prediction = current.prediction;
+  working = working.filter((n) => n.node_id !== nodeId);
+
+  const updated = fetched.map((node) => {
+    const u: RawTreeNode = { ...node };
+    if (node.node_id === 0) {
+      u.parent_edge = parentEdge ? { ...parentEdge } : u.parent_edge;
+      u.prediction = prediction;
+      u.node_id = nodeId;
+    } else {
+      u.node_id = node.node_id + lastNodeID;
+      if (node.parent_edge) {
+        u.parent_edge = {
+          ...node.parent_edge,
+          parent_node_id:
+            node.parent_edge.parent_node_id === 0
+              ? nodeId
+              : node.parent_edge.parent_node_id === -1
+                ? node.parent_edge.parent_node_id
+                : node.parent_edge.parent_node_id + lastNodeID,
+        };
+      }
+    }
+    if (node.children) u.children = node.children.map((c) => ({ ...c, to_node_id: c.to_node_id + lastNodeID }));
+    return u;
+  });
+  return [...working, ...updated];
+}
 
 // Fetch the decision tree for a load and lay it out natively (no browser). Returns
 // the render layout plus the normalised FlowNode[] (nodes + edge stopovers) that
-// the camera/picker already consume.
+// the camera/picker already consume, and the raw tree (for later edits).
 export async function buildFlowchart(
   loadId: number,
   street = "flop",
   leafs: number | string = 5,
   filters: SceneFilter[] = [],
+  direction: FlowchartDirection = "TB",
+  propertiesCsv?: string
+): Promise<{ layout: FlowchartLayout; nodes: FlowNode[]; raw: RawTreeNode[] } | null> {
+  const raw = await fetchTree(loadId, street, leafs, propertiesCsv, filters);
+  if (!raw) return null;
+  const laid = await layoutTree(raw, direction);
+  return { ...laid, raw };
+}
+
+// Lay out a raw tree with dagre (deterministic node sizes, no browser).
+export async function layoutTree(
+  raw: RawTreeNode[],
   direction: FlowchartDirection = "TB"
-): Promise<{ layout: FlowchartLayout; nodes: FlowNode[] } | null> {
-  const parts = [...filterQueryParts(filters), `properties=${treeProperties(street)}`, "pred_on_split=true"];
-  const res = await authGet(`/tree/${loadId}/${street}/${leafs}/?${parts.join("&")}`);
-  if (!res.ok) return null;
-  const raw = (await res.json()) as RawNode[];
-  if (!Array.isArray(raw) || raw.length === 0) return null;
+): Promise<{ layout: FlowchartLayout; nodes: FlowNode[] }> {
   const labels = await fetchFlowchartPropertyLabels();
 
   // Decision (edge) label leading INTO each node.

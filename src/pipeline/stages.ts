@@ -92,11 +92,13 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
 
   let fcLayout: FlowchartLayout | undefined;
   let fcNodes: FlowNode[] | undefined;
+  let fcTree: unknown[] | undefined;
   if (loadId) {
     const fc = await buildFlowchart(loadId, brief.street ?? "flop", 5, [], "TB");
     if (fc) {
       fcLayout = fc.layout;
       fcNodes = fc.nodes;
+      fcTree = fc.raw;
       console.log(`    ✓ flowchart (${fc.layout.nodes.length} nodes, ${fc.layout.edges.length} edges)`);
     } else {
       console.warn("    ⚠ flowchart build failed — falling back to strategy chart");
@@ -148,6 +150,7 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     if (r.type === "flowchart") {
       // Default camera: open on the full tree, then a gentle centred push-in.
       base.nodes = fcNodes;
+      base.tree = fcTree;
       base.camera = [
         { cx: 0.5, cy: 0.5, zoom: 1 },
         { cx: 0.5, cy: 0.5, zoom: 1.2 },
@@ -160,6 +163,7 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   // without re-running draft creation.
   const pool = {
     flowchart: fcLayout,
+    tree: fcTree,
     nodes: fcNodes,
     preflopGrid: spot.preflopGrid,
     preflopLabel: spot.preflopLabel,

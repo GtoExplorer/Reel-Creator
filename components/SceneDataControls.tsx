@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import type { CategoryStrategy, DraftScene, FlowchartDirection, RangeCell, SceneFilter } from "@/src/types";
+import { remapCamera } from "@/lib/scenes";
 import { propertyGroups, prettyProperty } from "@/lib/properties";
 
 type ValueOptions = Record<string, { value: string; label: string }[]>;
@@ -165,8 +166,12 @@ export function SceneDataControls({
       const direction = scene.flowchart?.direction ?? "TB";
       setBusy(true);
       try {
+        const leafs = scene.treeLeafs ?? 7;
+        const propParam = scene.treeProperties?.length
+          ? `&properties=${encodeURIComponent(scene.treeProperties.join(","))}`
+          : "";
         const r = await fetch(
-          `/api/flowchart?loadId=${nextLoadId}&street=${encodeURIComponent(street || "flop")}&direction=${direction}&filters=${filtersParam(nextFilters)}`
+          `/api/flowchart?loadId=${nextLoadId}&street=${encodeURIComponent(street || "flop")}&direction=${direction}&leafs=${leafs}${propParam}&filters=${filtersParam(nextFilters)}`
         ).then((res) => res.json());
         if (r.flowchart && r.nodes) {
           onChange({
@@ -174,6 +179,7 @@ export function SceneDataControls({
             filters: nextFilters,
             flowchart: r.flowchart,
             nodes: r.nodes,
+            tree: r.tree,
             camera: DEFAULT_CAMERA,
           });
         } else {
@@ -203,13 +209,36 @@ export function SceneDataControls({
   }
 
   async function setFlowchartDirection(direction: FlowchartDirection) {
-    const nextLoadId = parsedLoadId();
-    if (!nextLoadId) {
-      alert("Enter a valid load ID");
-      return;
-    }
     setBusy(true);
     try {
+      // With a stored raw tree, a direction flip is just a relayout — keep the
+      // user's expansions and carry camera stops to the nodes' new positions.
+      if (Array.isArray(scene.tree) && scene.tree.length) {
+        const r = await fetch("/api/flowchart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ op: "layout", tree: scene.tree, direction }),
+        }).then((res) => res.json());
+        if (r.flowchart && r.nodes) {
+          const camera = remapCamera(scene.camera ?? [], scene.nodes ?? [], r.nodes);
+          onChange({
+            flowchart: r.flowchart,
+            nodes: r.nodes,
+            tree: r.tree,
+            camera: camera.length ? camera : DEFAULT_CAMERA,
+          });
+        } else {
+          alert(r.error || "No flowchart for that orientation");
+        }
+        return;
+      }
+
+      // Legacy draft without a stored tree: refetch from scratch.
+      const nextLoadId = parsedLoadId();
+      if (!nextLoadId) {
+        alert("Enter a valid load ID");
+        return;
+      }
       const r = await fetch(
         `/api/flowchart?loadId=${nextLoadId}&street=${encodeURIComponent(street || "flop")}&direction=${direction}&filters=${filtersParam(filters)}`
       ).then((res) => res.json());
@@ -218,6 +247,7 @@ export function SceneDataControls({
           loadId: nextLoadId,
           flowchart: r.flowchart,
           nodes: r.nodes,
+          tree: r.tree,
           camera: DEFAULT_CAMERA,
         });
       } else {

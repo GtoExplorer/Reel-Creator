@@ -251,6 +251,9 @@ export const DraftScene = z.object({
   rangeGrid: z.array(RangeCell).optional(),
   image: z.string().optional(),
   flowchart: FlowchartLayout.optional(),
+  tree: z.array(z.unknown()).optional(), // raw solver tree (with parent_edge) behind the flowchart, kept for tree editing
+  treeLeafs: z.number().optional(), // depth used for tree rebuilds + node expansions
+  treeProperties: z.array(z.string()).optional(), // split properties for tree rebuilds + node expansions
   zoom: z.number().optional(),
   panY: z.number().optional(),
   nodes: z.array(FlowNode).optional(),
@@ -268,6 +271,7 @@ export const DraftPool = z.object({
   imageW: z.number().optional(),
   imageH: z.number().optional(),
   flowchart: FlowchartLayout.optional(),
+  tree: z.array(z.unknown()).optional(), // raw solver tree behind pool.flowchart (for tree editing)
   nodes: z.array(FlowNode).optional(),
   preflopGrid: z.array(RangeCell).optional(),
   preflopLabel: z.string().optional(),

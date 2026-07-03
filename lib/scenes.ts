@@ -1,6 +1,22 @@
-import type { DraftManifest, DraftPool, DraftScene, RenderManifest, RenderScene, SceneType } from "@/src/types";
+import type { CameraStep, DraftManifest, DraftPool, DraftScene, FlowNode, RenderManifest, RenderScene, SceneType } from "@/src/types";
 import { hasPerNodeLines, voiceoverFromLines, timeCameraToLines } from "@/src/cameraTiming";
 import { resolveDrawingTimings, stripAnimationTags } from "@/src/drawingAnimations";
+
+// Keep camera stops aimed at nodes that survived a tree edit (expand/collapse/
+// direction flip): match each stop to its old node by position, then follow the
+// node id to its new position. Stops whose node disappeared are dropped; free
+// stops (zoom-outs) are kept as-is.
+export function remapCamera(camera: CameraStep[], oldNodes: FlowNode[], newNodes: FlowNode[]): CameraStep[] {
+  const near = (n: FlowNode, wp: CameraStep) => Math.abs(n.cx - wp.cx) < 1e-3 && Math.abs(n.cy - wp.cy) < 1e-3;
+  return camera
+    .map((wp) => {
+      const oldN = oldNodes.find((n) => near(n, wp));
+      if (!oldN) return wp;
+      const newN = newNodes.find((n) => n.id === oldN.id && n.kind === oldN.kind);
+      return newN ? { ...wp, cx: newN.cx, cy: newN.cy } : null;
+    })
+    .filter((wp): wp is CameraStep => wp !== null);
+}
 
 // Build a fresh scene of any type, pulling its data from the draft's asset pool
 // so add-scene needs no new draft generation. Pure + client-safe.
@@ -18,6 +34,7 @@ export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number, gameI
         loadId,
         gameId,
         flowchart: p.flowchart,
+        tree: p.tree,
         nodes: p.nodes ?? [],
         camera: [
           { cx: 0.5, cy: 0.5, zoom: 1 },

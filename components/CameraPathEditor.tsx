@@ -158,6 +158,9 @@ export function CameraPathEditor({
       </div>
 
       <div className="mt-2 flex flex-wrap gap-2">
+        <button className="btn-ghost btn-mini" onClick={addZoomOut}>
+          + Full tree stop (zoom out)
+        </button>
         <button className="btn-ghost btn-mini" onClick={autoLines} disabled={autoing}>
           {autoing ? "Writing…" : "✨ Auto-write per-node lines"}
         </button>

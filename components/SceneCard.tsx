@@ -1,6 +1,8 @@
 "use client";
+import { useState } from "react";
 import type { DraftScene } from "@/src/types";
 import { CameraPathEditor } from "./CameraPathEditor";
+import { FlowchartTreeEditor } from "./FlowchartTreeEditor";
 import { VoicePicker } from "./VoicePicker";
 import { SceneDataControls } from "./SceneDataControls";
 import { SceneScriptButton } from "./SceneScriptButton";
@@ -41,7 +43,11 @@ export function SceneCard({
 }) {
   const hasCam = Array.isArray(scene.nodes);
   const isBars = scene.type === "barCharts";
-  const hasDataControls = isBars || scene.type === "freqBars" || scene.type === "flowchart" || scene.type === "preflopMatrix";
+  const isFlowchart = scene.type === "flowchart";
+  const hasDataControls = isBars || scene.type === "freqBars" || isFlowchart || scene.type === "preflopMatrix";
+  // Flowchart scenes split their controls across two tabs: build the exact tree
+  // first (expand/collapse like the dashboard Explorer), then camera + settings.
+  const [tab, setTab] = useState<"tree" | "settings">("tree");
   return (
     <div className="rounded-xl border border-line bg-elevated p-4">
       <div className="mb-1 flex items-center justify-between">
@@ -70,7 +76,33 @@ export function SceneCard({
       <SceneScriptButton scene={scene} topic={topic} concept={concept} onChange={onChange} />
       <DrawingAnimationControls scene={scene} onChange={onChange} />
 
-      {hasDataControls && (
+      {isFlowchart && (
+        <div className="mt-3 flex overflow-hidden rounded-lg border border-line text-xs">
+          {(
+            [
+              { id: "tree", label: "Tree editor" },
+              { id: "settings", label: "Camera & settings" },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`flex-1 px-3 py-1.5 font-medium transition-colors ${
+                tab === t.id ? "bg-accent/20 text-accent" : "text-muted hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isFlowchart && tab === "tree" && (
+        <FlowchartTreeEditor scene={scene} defaultLoadId={loadId} street={street} onChange={onChange} />
+      )}
+
+      {hasDataControls && (!isFlowchart || tab === "settings") && (
         <SceneDataControls
           scene={scene}
           defaultLoadId={loadId}
@@ -81,7 +113,9 @@ export function SceneCard({
         />
       )}
 
-      {hasCam && <CameraPathEditor scene={scene} onChange={onChange} topic={topic} concept={concept} />}
+      {hasCam && (!isFlowchart || tab === "settings") && (
+        <CameraPathEditor scene={scene} onChange={onChange} topic={topic} concept={concept} />
+      )}
 
       <VoicePicker briefId={briefId} index={index} clip={clip} onSaved={onClip} />
     </div>
