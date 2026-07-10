@@ -79,16 +79,19 @@ export type FlowNode = z.infer<typeof FlowNode>;
 
 // One camera waypoint: centre on (cx,cy) at this zoom. The reel eases through the
 // list across the scene; repeat a waypoint to dwell on it.
-//   line  — optional narration spoken while the camera is on this node. When any
-//           waypoint has a line, the scene voiceover is built from the lines in
-//           order and each waypoint is timed to when its line is spoken.
-//   atSec — computed at voicing time: when this waypoint becomes active (seconds).
+//   line     — optional narration spoken while the camera is on this node. When any
+//              waypoint has a line, the scene voiceover is built from the lines in
+//              order and each waypoint is timed to when its line is spoken.
+//   atSec    — computed at voicing time: when this waypoint becomes active (seconds).
+//   pauseSec — even-pan mode only: dwell on this stop for this long before moving
+//              to the next (per-node-line mode paces stops by the narration instead).
 export const CameraStep = z.object({
   cx: z.number(),
   cy: z.number(),
   zoom: z.number(),
   line: z.string().optional(),
   atSec: z.number().optional(),
+  pauseSec: z.number().min(0).optional(),
 });
 export type CameraStep = z.infer<typeof CameraStep>;
 
@@ -210,7 +213,8 @@ export const RenderScene = z.object({
   voiceover: z.string(),
   audioFile: z.string(), // path relative to public/, e.g. "reels/<id>/scene_0.mp3"
   customAudio: z.string().optional(), // recorded/uploaded source clip, if any
-  durationSec: z.number(),
+  durationSec: z.number(), // full scene length INCLUDING holdSec
+  holdSec: z.number().min(0).optional(), // linger on the final frame this long after the voiceover ends
   words: z.array(WordTimestamp),
   loadId: z.number().optional(), // scene-level override; defaults to draft loadId
   gameId: z.string().optional(), // preflop wizard game used to resolve this scene's load id
@@ -239,6 +243,7 @@ export const DraftScene = z.object({
   headline: z.string(),
   subtext: z.string(),
   voiceover: z.string(),
+  holdSec: z.number().min(0).optional(), // linger on the final frame this long before the next scene
   customAudio: z.string().optional(), // recorded/uploaded source clip, persisted with draft edits
   loadId: z.number().optional(), // scene-level override; defaults to draft loadId
   gameId: z.string().optional(), // preflop wizard game used to resolve this scene's load id

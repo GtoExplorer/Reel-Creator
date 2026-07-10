@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
 import type { CameraStep, DraftScene, FlowNode } from "@/src/types";
-import { FlowchartView } from "@/src/flowchart/FlowchartView";
+import { FlowchartCanvas } from "./FlowchartCanvas";
 import { hasPerNodeLines, voiceoverFromLines } from "@/src/cameraTiming";
 import { remapCamera } from "@/lib/scenes";
 import { defaultTreePropertySelection, prettyProperty, treePropertyGroups } from "@/lib/properties";
@@ -214,35 +213,30 @@ export function FlowchartTreeEditor({
             properties above) · <span className="text-accent">−</span> to collapse it. Camera stops follow surviving
             nodes.
           </div>
-          <div className="relative max-h-[440px] overflow-auto rounded-lg border border-line bg-black">
-            <div
-              className="relative min-w-[720px]"
-              style={{ aspectRatio: `${scene.flowchart.width} / ${scene.flowchart.height}` } as CSSProperties}
-            >
-              <FlowchartView layout={scene.flowchart} />
-              <div className="absolute inset-0">
-                {nodes.map((n) => {
-                  const isExpanded = n.id ? expanded.has(n.id) : false;
-                  const ring = n.kind === "split" ? "border-accent text-accent" : "border-emerald-400 text-emerald-300";
-                  return (
-                    <button
-                      key={n.id}
-                      onClick={() => toggleNode(n)}
-                      disabled={busy}
-                      title={`${isExpanded ? "Collapse" : "Expand"} — ${n.label}`}
-                      style={{ left: `${n.cx * 100}%`, top: `${n.cy * 100}%` }}
-                      className={`absolute flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 text-sm font-bold shadow transition hover:z-20 hover:scale-125 ${
-                        isExpanded ? "bg-black/70 border-rose-400 text-rose-300" : `bg-black/70 ${ring}`
-                      }`}
-                    >
-                      {isExpanded ? "−" : "+"}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+          <div className="relative">
+            <FlowchartCanvas
+              layout={scene.flowchart}
+              overlay={nodes.map((n) => {
+                const isExpanded = n.id ? expanded.has(n.id) : false;
+                const ring = n.kind === "split" ? "border-accent text-accent" : "border-emerald-400 text-emerald-300";
+                return (
+                  <button
+                    key={n.id}
+                    onClick={() => toggleNode(n)}
+                    disabled={busy}
+                    title={`${isExpanded ? "Collapse" : "Expand"} — ${n.label}`}
+                    style={{ left: `${n.cx * 100}%`, top: `${n.cy * 100}%` }}
+                    className={`absolute flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 text-sm font-bold shadow transition hover:z-20 hover:scale-125 ${
+                      isExpanded ? "bg-black/70 border-rose-400 text-rose-300" : `bg-black/70 ${ring}`
+                    }`}
+                  >
+                    {isExpanded ? "−" : "+"}
+                  </button>
+                );
+              })}
+            />
             {busy && (
-              <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 text-xs text-muted">
+              <div className="absolute inset-0 z-30 flex items-center justify-center rounded-lg bg-black/60 text-xs text-muted">
                 Updating tree...
               </div>
             )}

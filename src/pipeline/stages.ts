@@ -234,6 +234,9 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
     }
     const { words, durationSec } = await alignCaptions(audioAbs, voiceover);
     const drawings = resolveDrawingTimings(d.drawings, taggedVoiceover, words, durationSec);
+    // End-of-scene hold: extend the scene past the voiceover so the final frame
+    // lingers (audio/captions/camera all complete before it).
+    const holdSec = Math.max(0, d.holdSec ?? 0);
 
     scenes.push({
       type: d.type,
@@ -260,7 +263,8 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       imageW: d.imageW,
       imageH: d.imageH,
       audioFile,
-      durationSec,
+      durationSec: durationSec + holdSec,
+      holdSec: d.holdSec,
       words,
     });
   }

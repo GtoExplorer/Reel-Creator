@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { DraftScene } from "@/src/types";
 import { CameraPathEditor } from "./CameraPathEditor";
 import { FlowchartTreeEditor } from "./FlowchartTreeEditor";
+import { SecondsInput } from "./SecondsInput";
 import { VoicePicker } from "./VoicePicker";
 import { SceneDataControls } from "./SceneDataControls";
 import { SceneScriptButton } from "./SceneScriptButton";
@@ -73,6 +74,11 @@ export function SceneCard({
       <input className="input" value={scene.subtext} onChange={(e) => onChange({ subtext: e.target.value })} />
       <div className="label">Voiceover</div>
       <textarea className="input" value={scene.voiceover} onChange={(e) => onChange({ voiceover: e.target.value })} />
+      <div className="mt-1 flex items-center gap-2 text-sm text-muted">
+        <span className="label !mb-0">Hold at end</span>
+        <SecondsInput value={scene.holdSec ?? 0} onCommit={(holdSec) => onChange({ holdSec: holdSec || undefined })} />
+        <span className="text-[11px]">s — linger on the last frame before the next scene</span>
+      </div>
       <SceneScriptButton scene={scene} topic={topic} concept={concept} onChange={onChange} />
       <DrawingAnimationControls scene={scene} onChange={onChange} />
 

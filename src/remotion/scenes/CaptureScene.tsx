@@ -17,10 +17,12 @@ const withActive = (step: CameraStep, activeIndex: number): CameraSample => ({ .
 const GLIDE_SEC = 0.7; // time to ease into each node when its line begins
 const WAYPOINT_EPS = 1e-3;
 
-// Samples the camera at time `tSec` (scene total = totalSec).
+// Samples the camera at time `tSec` (the camera move completes by totalSec —
+// any scene hold beyond that just rests on the final waypoint).
 //   - If waypoints carry `atSec` (per-node script), the camera holds on each node
 //     and glides to the next as its narration line begins.
-//   - Otherwise it eases evenly across the whole scene (legacy behaviour).
+//   - Otherwise it eases evenly across totalSec, dwelling on any stop with a
+//     `pauseSec` before moving on; the moves share the remaining time equally.
 function sampleCamera(cam: CameraStep[], tSec: number, totalSec: number): CameraSample {
   if (cam.length === 0) return withActive({ cx: 0.5, cy: 0.5, zoom: 1 }, -1);
   if (cam.length === 1) return withActive(cam[0], 0);
@@ -35,11 +37,20 @@ function sampleCamera(cam: CameraStep[], tSec: number, totalSec: number): Camera
     return withActive(lerp(prev, cur, f), k);
   }
 
-  const t = totalSec > 0 ? tSec / totalSec : 0;
-  const seg = t * (cam.length - 1);
-  const i = Math.min(cam.length - 2, Math.floor(seg));
-  const activeIndex = seg <= 0 ? 0 : i + 1;
-  return withActive(lerp(cam[i], cam[i + 1], smoothstep(seg - i)), activeIndex);
+  if (tSec <= 0) return withActive(cam[0], 0);
+  const n = cam.length;
+  // A pause on the last stop is covered by the scene hold, so it doesn't get a slot.
+  const pauses = cam.map((c, i) => (i < n - 1 ? Math.max(0, c.pauseSec ?? 0) : 0));
+  const pauseTotal = pauses.reduce((a, b) => a + b, 0);
+  const moveSec = Math.max(0.1, totalSec - pauseTotal) / (n - 1);
+  let t = tSec;
+  for (let i = 0; i < n - 1; i++) {
+    if (t < pauses[i]) return withActive(cam[i], i);
+    t -= pauses[i];
+    if (t < moveSec) return withActive(lerp(cam[i], cam[i + 1], smoothstep(t / moveSec)), i + 1);
+    t -= moveSec;
+  }
+  return withActive(cam[n - 1], n - 1);
 }
 
 function edgeKey(layout: FlowchartLayout, index: number): string {
@@ -126,7 +137,9 @@ export const CaptureScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
   const cam = scene.camera?.length
     ? scene.camera
     : [{ cx: 0.5, cy: 0.5, zoom: 1 }, { cx: 0.5, cy: 0.5, zoom: scene.zoom ?? 1.2 }];
-  const cameraSample = sampleCamera(cam, frame / fps, durationInFrames / fps);
+  // The camera completes its path before any end-of-scene hold, then lingers.
+  const activeSec = Math.max(0.1, durationInFrames / fps - Math.max(0, scene.holdSec ?? 0));
+  const cameraSample = sampleCamera(cam, frame / fps, activeSec);
   const { cx, cy, zoom } = cameraSample;
   const activeWaypoint = cameraSample.activeIndex >= 0 ? cam[Math.min(cameraSample.activeIndex, cam.length - 1)] : undefined;
   const activeNode = nodeForWaypoint(scene.nodes, activeWaypoint);

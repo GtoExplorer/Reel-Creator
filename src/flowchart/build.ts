@@ -192,7 +192,9 @@ export async function layoutTree(
 
   type M = { id: string; kind: "split" | "strategy"; label: string; edge?: string; preds: FreqBar[]; w: number; h: number };
   const model: M[] = raw.map((n) => {
-    const kind: "split" | "strategy" = n.feature ? "split" : "strategy";
+    // Like the Explorer, the card style follows the node's CURRENT state: a
+    // collapsed split (children pruned) renders as a strategy/leaf card again.
+    const kind: "split" | "strategy" = n.feature && (n.children?.length ?? 0) > 0 ? "split" : "strategy";
     const preds = sortActions(
       (n.prediction ?? []).map((p) => ({ action: prettyAction(p.action), freq: Math.round(p.frequency * 1000) / 10, kind: actionKind(p.action) }))
     );

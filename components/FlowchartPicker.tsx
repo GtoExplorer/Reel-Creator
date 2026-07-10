@@ -1,7 +1,6 @@
 "use client";
-import type { CSSProperties } from "react";
 import type { DraftScene, FlowNode } from "@/src/types";
-import { FlowchartView } from "@/src/flowchart/FlowchartView";
+import { FlowchartCanvas } from "./FlowchartCanvas";
 
 // Renders the native flowchart with a clickable marker on every node, so the
 // camera path is built by clicking the actual nodes (not guessing from names).
@@ -32,13 +31,10 @@ export function FlowchartPicker({
           + Full tree (zoom out)
         </button>
       </div>
-      <div className="max-h-[440px] overflow-auto rounded-lg border border-line bg-black">
-        <div
-          className="relative min-w-[720px]"
-          style={{ aspectRatio: `${scene.flowchart.width} / ${scene.flowchart.height}` } as CSSProperties}
-        >
-          <FlowchartView layout={scene.flowchart} />
-          <div className="absolute inset-0">
+      <FlowchartCanvas
+        layout={scene.flowchart}
+        overlay={
+          <>
             {nodes.map((n, i) => {
               const ord = orderOf(n);
               const inPath = ord.length > 0;
@@ -70,9 +66,9 @@ export function FlowchartPicker({
                 </button>
               );
             })}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
       <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-muted">
         <span className="flex items-center gap-1">
           <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-accent" /> split (feature)

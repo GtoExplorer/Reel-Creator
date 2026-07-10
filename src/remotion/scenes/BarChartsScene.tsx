@@ -1,19 +1,22 @@
 import React from "react";
 import { spring, useCurrentFrame, useVideoConfig } from "remotion";
 import type { RenderScene, FreqBar, TimedDrawingAnimation } from "../../types.js";
-import { theme } from "../theme.js";
+import { SAFE, theme } from "../theme.js";
+import { VIDEO } from "../../videoSpec.js";
 import { KIND_ORDER, actionColor, sortActions } from "../../poker/ranges.js";
 import { orderCategoryRows } from "../../barRows.js";
 import { type DrawingBox, TimedDrawingOverlay } from "../components/DrawingOverlay.js";
 
 const ROW_H = 52;
 const ROW_GAP = 24;
-const CHART_W = 1080;
-const BAR_W = 540;
+// Fill the safe-area width: a fixed label column, then the bar takes ALL the
+// remaining space (the old layout centred a 540px bar between two spacer
+// columns, wasting the right quarter of the frame).
+const CHART_W = VIDEO.width - SAFE.side * 2;
+const LABEL_W = 240;
 const COLUMN_GAP = 24;
-// The bar column is centered between two equal-width flex columns (label + spacer),
-// so its x offset depends on the surrounding column widths, not a fixed margin.
-const HIGHLIGHT_X = (CHART_W - BAR_W) / 2;
+const BAR_W = CHART_W - LABEL_W - COLUMN_GAP;
+const HIGHLIGHT_X = LABEL_W + COLUMN_GAP;
 const HIGHLIGHT_W = BAR_W;
 
 const KIND_LABEL: Record<FreqBar["kind"], string> = {
@@ -68,7 +71,7 @@ export const BarChartsScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
         {cats.map((c, i) => {
           const grow = spring({ frame, fps, delay: 4 + i * 4, config: { damping: 200 } });
           return (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)", alignItems: "center", columnGap: COLUMN_GAP }}>
+            <div key={i} style={{ display: "grid", gridTemplateColumns: `${LABEL_W}px ${BAR_W}px`, alignItems: "center", columnGap: COLUMN_GAP }}>
               <div style={{ textAlign: "right", whiteSpace: "nowrap", fontSize: 34, fontWeight: 700, color: theme.text }}>
                 {c.category}
               </div>
@@ -79,7 +82,6 @@ export const BarChartsScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
                   ))}
                 </div>
               </div>
-              <div />
             </div>
           );
         })}

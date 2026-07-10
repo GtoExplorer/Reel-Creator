@@ -70,8 +70,11 @@ export function draftToPreview(draft: DraftManifest): RenderManifest {
     const taggedVo = perNode ? voiceoverFromLines(s.camera) : s.voiceover ?? "";
     const vo = stripAnimationTags(taggedVo);
     const words = vo.trim().split(/\s+/).filter(Boolean).length;
-    const durationSec = Math.max(2.5, words / 2.6);
-    const camera = perNode ? timeCameraToLines(s.camera ?? [], [], durationSec) : s.camera;
+    // Camera/caption timing runs against the speech estimate; the end-of-scene
+    // hold is appended on top so the final frame lingers.
+    const speechSec = Math.max(2.5, words / 2.6);
+    const durationSec = speechSec + Math.max(0, s.holdSec ?? 0);
+    const camera = perNode ? timeCameraToLines(s.camera ?? [], [], speechSec) : s.camera;
     return { ...s, camera, voiceover: vo, audioFile: "", durationSec, words: [], drawings: [] };
   });
   return { briefId: draft.briefId, title: draft.title, hashtags: draft.hashtags, scenes };
@@ -100,13 +103,16 @@ export function draftToPreviewWithVoices(draft: DraftManifest, voiced: RenderMan
       if (!draftScene || !sameVoiceSource(draftScene, scene, voicedScene)) return scene;
 
       const perNode = draftScene.type === "flowchart" && hasPerNodeLines(draftScene.camera);
+      // Rebuild the duration from the voiced SPEECH length + the draft's CURRENT
+      // hold, so hold edits preview live without re-voicing.
+      const speechSec = Math.max(0, voicedScene.durationSec - (voicedScene.holdSec ?? 0));
       return {
         ...scene,
         audioFile: voicedScene.audioFile,
-        durationSec: voicedScene.durationSec,
+        durationSec: speechSec + Math.max(0, draftScene.holdSec ?? 0),
         words: voicedScene.words,
-        camera: perNode ? timeCameraToLines(draftScene.camera ?? [], voicedScene.words, voicedScene.durationSec) : scene.camera,
-        drawings: resolveDrawingTimings(draftScene.drawings, draftScene.voiceover, voicedScene.words, voicedScene.durationSec),
+        camera: perNode ? timeCameraToLines(draftScene.camera ?? [], voicedScene.words, speechSec) : scene.camera,
+        drawings: resolveDrawingTimings(draftScene.drawings, draftScene.voiceover, voicedScene.words, speechSec),
       };
     }),
   };

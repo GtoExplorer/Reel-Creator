@@ -1,10 +1,35 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CameraStep, DraftScene, FlowNode } from "@/src/types";
 import { hasPerNodeLines, voiceoverFromLines } from "@/src/cameraTiming";
 import { FlowchartPicker } from "./FlowchartPicker";
+import { SecondsInput } from "./SecondsInput";
 
 const DEFAULT_WP: CameraStep = { cx: 0.5, cy: 0.5, zoom: 1 };
+
+// Text entry for granular zoom values (the slider is coarse and capped 1-10;
+// typing allows e.g. 0.8 or 2.35). Commits every valid keystroke, resets to
+// the current value on blur if left invalid.
+function ZoomInput({ value, onCommit }: { value: number; onCommit: (z: number) => void }) {
+  const [text, setText] = useState(String(value));
+  useEffect(() => setText(String(value)), [value]);
+  return (
+    <input
+      type="number"
+      min={0.05}
+      max={20}
+      step={0.05}
+      className="input !mb-0 !w-[4.5rem] !px-1.5 !py-0.5 text-right"
+      value={text}
+      onChange={(e) => {
+        setText(e.target.value);
+        const v = parseFloat(e.target.value);
+        if (Number.isFinite(v) && v >= 0.05 && v <= 20) onCommit(Math.round(v * 100) / 100);
+      }}
+      onBlur={() => setText(String(value))}
+    />
+  );
+}
 
 function KindBadge({ kind }: { kind: "split" | "strategy" | "edge" }) {
   const cls =
@@ -109,7 +134,8 @@ export function CameraPathEditor({
       <div className="label">Camera path — {camera.length} stop{camera.length === 1 ? "" : "s"}, played in order</div>
       <p className="mb-2 text-[11px] text-muted">
         Give each stop a line to <b className="text-text">sync its zoom to when it's spoken</b>. Leave lines empty to use one
-        voiceover that eases across the whole move.
+        voiceover that eases across the whole move — there, <b className="text-text">pause</b> dwells on a stop before the
+        camera moves on (with lines, the narration paces the stops instead).
       </p>
 
       <div className="flex flex-col gap-2.5">
@@ -139,8 +165,19 @@ export function CameraPathEditor({
                 <span className="flex shrink-0 items-center gap-1 text-sm text-muted">
                   zoom
                   <input type="range" min={1} max={10} step={0.1} value={wp.zoom} onChange={(e) => updateWp(k, { zoom: +e.target.value })} />
-                  <b className="text-text">{wp.zoom.toFixed(1)}x</b>
+                  <ZoomInput value={wp.zoom} onCommit={(zoom) => updateWp(k, { zoom })} />
+                  <b className="text-text">x</b>
                 </span>
+                {k < camera.length - 1 && (
+                  <span
+                    className="flex shrink-0 items-center gap-1 text-sm text-muted"
+                    title="Dwell on this stop for this long before the camera moves to the next (even-pan mode; with per-node lines the narration paces the stops)"
+                  >
+                    pause
+                    <SecondsInput value={wp.pauseSec ?? 0} onCommit={(pauseSec) => updateWp(k, { pauseSec: pauseSec || undefined })} />
+                    <b className="text-text">s</b>
+                  </span>
+                )}
                 <button className="btn-ghost btn-mini shrink-0" onClick={() => delWp(k)}>
                   ✕
                 </button>
