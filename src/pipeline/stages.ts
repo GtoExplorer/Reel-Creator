@@ -12,10 +12,11 @@ import {
   type SpotData,
   type FlowchartLayout,
   type FlowNode,
+  type DrawingAnimation,
 } from "../types.js";
 import { fetchLoadStreet, fetchSpotData, lineFromLoadId, loadIdFromLine } from "../data/solverApi.js";
 import { buildFlowchart } from "../flowchart/build.js";
-import { generateStoryboard } from "../openai/script.js";
+import { generateStoryboard, narrateBars, narrateFlowchartNodes, narratePreflopMatrix } from "../openai/script.js";
 import { synthesizeVoiceover } from "../openai/voiceover.js";
 import { alignCaptions } from "../openai/captions.js";
 import { aggression } from "../poker/ranges.js";
@@ -55,6 +56,60 @@ function summariseSpot(spot: SpotData): string {
     if (hi && lo && hi.cat !== lo.cat) facts.push(`Most aggressive on ${hi.cat} (${hi.agg}%), least on ${lo.cat} (${lo.agg}%).`);
   }
   return facts.join("\n");
+}
+
+function regexEscape(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function tagMention(text: string, term: string, id: string): string {
+  const match = new RegExp(`\\b${regexEscape(term)}\\b`, "i").exec(text);
+  if (!match || match.index == null) return text;
+  return `${text.slice(0, match.index)}<${id}>${match[0]}</${id}>${text.slice(match.index + match[0].length)}`;
+}
+
+function mentionedValues(text: string, values: string[], limit = 2): string[] {
+  return [...values].sort((a, b) => b.length - a.length).filter((value) => new RegExp(`\\b${regexEscape(value)}\\b`, "i").test(text)).slice(0, limit);
+}
+
+function tagSentencesForValues(text: string, values: string[], limit = 2): { text: string; values: string[] } {
+  const available = [...values].sort((a, b) => b.length - a.length);
+  const used = new Set<string>();
+  let count = 0;
+  const tagged = (text.match(/[^.!?]+[.!?]?(?:\s+|$)/g) ?? [text]).map((sentence) => {
+    if (count >= limit) return sentence;
+    const value = available.find((candidate) => !used.has(candidate) && new RegExp(`\\b${regexEscape(candidate)}\\b`, "i").test(sentence));
+    if (!value) return sentence;
+    const trailing = sentence.match(/\s+$/)?.[0] ?? "";
+    const content = trailing ? sentence.slice(0, -trailing.length) : sentence;
+    count += 1;
+    used.add(value);
+    return `<a${count}>${content}</a${count}>${trailing}`;
+  }).join("");
+  return { text: tagged, values: [...used] };
+}
+
+function cameraNodesForStory(nodes: FlowNode[] = [], raw: unknown[] = []): FlowNode[] {
+  type TreeRow = { node_id: number; parent_edge?: { parent_node_id?: number } };
+  const rows = raw as TreeRow[];
+  const byId = new Map(rows.map((row) => [row.node_id, row]));
+  const chainFor = (row: TreeRow): number[] => {
+    const chain = [row.node_id];
+    let parent = row.parent_edge?.parent_node_id;
+    const seen = new Set(chain);
+    while (parent != null && parent !== -1 && !seen.has(parent)) {
+      chain.unshift(parent);
+      seen.add(parent);
+      parent = byId.get(parent)?.parent_edge?.parent_node_id;
+    }
+    return chain;
+  };
+  const deepest = rows.map(chainFor).sort((a, b) => b.length - a.length)[0] ?? [];
+  const connected = deepest.map((id) => nodes.find((node) => node.id === String(id))).filter((node): node is FlowNode => !!node);
+  const candidates = (connected.length >= 2 ? connected : nodes.filter((node) => node.kind !== "edge")).sort((a, b) => a.cy - b.cy || a.cx - b.cx);
+  if (candidates.length <= 4) return candidates;
+  const picks = [0, Math.round((candidates.length - 1) / 3), Math.round(((candidates.length - 1) * 2) / 3), candidates.length - 1];
+  return picks.map((index) => candidates[index]).filter((node, index, all) => all.findIndex((other) => other.id === node.id) === index);
 }
 
 // STAGE 1 - solver data + script, but no voiceover/render. Returns an editable
@@ -124,7 +179,12 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   const spot = await fetchSpotData(resolvedBrief);
 
   console.log("  • Writing script + storyboard (OpenAI)");
-  const storyboard = await generateStoryboard(brief, summariseSpot(spot));
+  const storyboardFacts = [
+    aiSelection ? `Selected solver spot: ${aiSelection.description}. Selection rationale: ${aiSelection.reason}` : "",
+    preflopLine?.length ? `Exact preflop line: ${preflopLine.join(", ")}.` : "",
+    summariseSpot(spot),
+  ].filter(Boolean).join("\n");
+  const storyboard = await generateStoryboard(resolvedBrief, storyboardFacts);
 
   const boardCat = brief.boardCategory ?? (street === "turn" ? "turn_top_card_rank" : "flop_top_card_rank");
   const barCategories = spot.boardCategories ?? spot.categories;
@@ -144,7 +204,7 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     }
   };
 
-  const scenes: DraftScene[] = storyboard.scenes.map((s) => {
+  let scenes: DraftScene[] = storyboard.scenes.map((s) => {
     const r = resolve(s.type);
     const headline =
       r.type === "preflopMatrix" && spot.preflopLabel
@@ -173,6 +233,51 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     }
     return base;
   });
+
+  // AI-created drafts get a second, data-grounded pass. Each data scene is
+  // scripted from its actual values, then animations/camera targets are taken
+  // only from entities that really exist in that scene.
+  if (brief.autoSelectSpot) {
+    const preflopScene = scenes.find((scene) => scene.type === "preflopMatrix");
+    const barsScene = scenes.find((scene) => scene.type === "barCharts");
+    const flowScene = scenes.find((scene) => scene.type === "flowchart");
+    const selectedFlowNodes = cameraNodesForStory(fcNodes, fcTree);
+    const [preflopCopy, barsCopy, flowLines] = await Promise.all([
+      preflopScene ? narratePreflopMatrix({ topic: brief.topic, concept: brief.concept, headline: preflopScene.headline, preflopLine, rangeGrid: spot.preflopGrid }) : null,
+      barsScene ? narrateBars(brief.topic, brief.concept, boardCat, barCategories) : null,
+      flowScene && selectedFlowNodes.length
+        ? narrateFlowchartNodes(brief.topic, brief.concept, [
+            { label: "Full decision tree overview", summary: "Establish the complete strategy before visiting individual decisions." },
+            ...selectedFlowNodes,
+          ])
+        : [],
+    ]);
+
+    scenes = scenes.map((scene) => {
+      if (scene.type === "preflopMatrix" && preflopCopy) {
+        let voiceover = preflopCopy.voiceover;
+        const hands = mentionedValues(voiceover, (scene.rangeGrid ?? []).map((cell) => cell.combo));
+        const drawings: DrawingAnimation[] = hands.map((hand, index) => ({ id: `a${index + 1}`, shape: "rect", target: { kind: "preflopHand", hand }, drawSec: 0.35, padding: 8 }));
+        hands.forEach((hand, index) => { voiceover = tagMention(voiceover, hand, `a${index + 1}`); });
+        return { ...scene, voiceover, subtext: preflopCopy.subtext, drawings };
+      }
+      if (scene.type === "barCharts" && barsCopy) {
+        const tagged = tagSentencesForValues(barsCopy.voiceover, (scene.categories ?? []).map((category) => category.category));
+        const voiceover = tagged.text;
+        const categories = tagged.values;
+        const drawings: DrawingAnimation[] = categories.map((category, index) => ({ id: `a${index + 1}`, shape: "rect", target: { kind: "barRange", from: category, to: category }, drawSec: 0.35, padding: 10 }));
+        return { ...scene, voiceover, subtext: barsCopy.subtext, drawings };
+      }
+      if (scene.type === "flowchart" && selectedFlowNodes.length && flowLines.length) {
+        const camera = [
+          { cx: 0.5, cy: 0.5, zoom: 1, line: flowLines[0] ?? "" },
+          ...selectedFlowNodes.map((node, index) => ({ cx: node.cx, cy: node.cy, zoom: 4, line: flowLines[index + 1] ?? "" })),
+        ];
+        return { ...scene, camera, voiceover: voiceoverFromLines(camera) };
+      }
+      return scene;
+    });
+  }
 
   // Pool of every fetched asset, so the editor can add or rebuild ANY scene type
   // without re-running draft creation.
