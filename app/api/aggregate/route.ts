@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     const street = await fetchLoadStreet(loadId);
     if (!street) return NextResponse.json({ error: "Could not determine the street for that load." }, { status: 404 });
     const r = await fetchCategoryStrategies(loadId, street, category, filters);
-    if (!r) return NextResponse.json({ error: "No data for that property on this load." }, { status: 404 });
+    if (!r) return NextResponse.json({ error: "That property is not available for this load's street.", street }, { status: 404 });
     return NextResponse.json({ ...r, street });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

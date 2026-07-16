@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     const street = await fetchLoadStreet(loadId);
     if (!street) return NextResponse.json({ error: "Could not determine the street for that load." }, { status: 404 });
     const r = await buildFlowchart(loadId, street, leafs, filters, direction, properties);
-    if (!r) return NextResponse.json({ error: "No flowchart for that load/filter combination." }, { status: 404 });
+    if (!r) return NextResponse.json({ error: "No flowchart for that load/filter combination.", street }, { status: 404 });
     return NextResponse.json({ flowchart: r.layout, nodes: r.nodes, tree: r.raw, street });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

@@ -155,6 +155,9 @@ export function SceneDataControls({
             headline: r.label || labelFor(category),
           });
         } else {
+          if (r.street && r.street !== effectiveStreet) {
+            onChange({ loadId: nextLoadId, street: r.street, category: undefined, categories: [], filters: nextFilters });
+          }
           alert(r.error || "No data for that load/filter combination");
         }
       } catch {
@@ -187,6 +190,9 @@ export function SceneDataControls({
             camera: DEFAULT_CAMERA,
           });
         } else {
+          if (r.street && r.street !== effectiveStreet) {
+            onChange({ loadId: nextLoadId, street: r.street, treeProperties: undefined, filters: nextFilters });
+          }
           alert(r.error || "No flowchart for that load/filter combination");
         }
       } catch {
