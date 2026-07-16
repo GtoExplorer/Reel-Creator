@@ -2,12 +2,16 @@ import React from "react";
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import type { RenderScene, TimedDrawingAnimation } from "../../types.js";
 import { theme } from "../theme.js";
+import { SAFE } from "../theme.js";
+import { VIDEO } from "../../videoSpec.js";
 import { actionColor } from "../../poker/ranges.js";
 import { type DrawingBox, TimedDrawingOverlay } from "../components/DrawingOverlay.js";
 
 const ROW_H = 136;
 const ROW_GAP = 52;
-const CHART_W = 1080;
+// SceneShell already applies the safe-area padding, so this renderer must use
+// the inner width rather than overflowing a second full video-width canvas.
+const CHART_W = VIDEO.width - SAFE.side * 2;
 const HIGHLIGHT_X = 48;
 const HIGHLIGHT_W = CHART_W - HIGHLIGHT_X * 2;
 

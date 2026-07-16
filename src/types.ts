@@ -159,6 +159,7 @@ export const Brief = z.object({
   gameId: z.string().optional(), // preflop wizard game id (defaults to the first game)
   // Preflop line used to resolve the postflop load id.
   preflopLine: z.array(z.string()).optional(),
+  autoSelectSpot: z.boolean().optional(), // let AI choose a real load from the creator's brief
   template: z.string().default("data-graphics-v1"),
 });
 export type Brief = z.infer<typeof Brief>;
@@ -300,6 +301,11 @@ export const DraftManifest = z.object({
   gameId: z.string().optional(), // preflop wizard game that disambiguates loadId -> line/matrix
   preflopLine: z.array(z.string()).optional(), // default preflop action sequence for preflopMatrix scenes
   street: z.string().optional(),
+  aiSelection: z.object({
+    loadId: z.number(),
+    description: z.string(),
+    reason: z.string(),
+  }).optional(),
   pool: DraftPool.optional(),
   scenes: z.array(DraftScene),
 });

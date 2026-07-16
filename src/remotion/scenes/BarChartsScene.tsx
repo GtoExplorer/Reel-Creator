@@ -9,14 +9,13 @@ import { type DrawingBox, TimedDrawingOverlay } from "../components/DrawingOverl
 
 const ROW_H = 52;
 const ROW_GAP = 24;
-// Fill the safe-area width: a fixed label column, then the bar takes ALL the
-// remaining space (the old layout centred a 540px bar between two spacer
-// columns, wasting the right quarter of the frame).
+// Keep the bar rectangles centred on the video canvas. Labels occupy the space
+// to their left; they must not push the bars off-centre.
 const CHART_W = VIDEO.width - SAFE.side * 2;
-const LABEL_W = 240;
 const COLUMN_GAP = 24;
-const BAR_W = CHART_W - LABEL_W - COLUMN_GAP;
-const HIGHLIGHT_X = LABEL_W + COLUMN_GAP;
+const BAR_W = 656;
+const HIGHLIGHT_X = (CHART_W - BAR_W) / 2;
+const LABEL_W = HIGHLIGHT_X - COLUMN_GAP;
 const HIGHLIGHT_W = BAR_W;
 
 const KIND_LABEL: Record<FreqBar["kind"], string> = {
@@ -70,12 +69,13 @@ export const BarChartsScene: React.FC<{ scene: RenderScene }> = ({ scene }) => {
       <div style={{ position: "relative", width: CHART_W, height: chartHeight, display: "flex", flexDirection: "column", gap: ROW_GAP }}>
         {cats.map((c, i) => {
           const grow = spring({ frame, fps, delay: 4 + i * 4, config: { damping: 200 } });
+          const labelSize = c.category.length > 8 ? 24 : c.category.length > 4 ? 28 : 34;
           return (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: `${LABEL_W}px ${BAR_W}px`, alignItems: "center", columnGap: COLUMN_GAP }}>
-              <div style={{ textAlign: "right", whiteSpace: "nowrap", fontSize: 34, fontWeight: 700, color: theme.text }}>
+            <div key={i} style={{ position: "relative", height: ROW_H }}>
+              <div style={{ position: "absolute", left: 0, top: 0, width: LABEL_W, height: ROW_H, display: "flex", alignItems: "center", justifyContent: "flex-end", textAlign: "right", whiteSpace: "nowrap", fontSize: labelSize, lineHeight: 1, fontWeight: 700, color: theme.text, zIndex: 2 }}>
                 {c.category}
               </div>
-              <div style={{ width: BAR_W, height: 52, borderRadius: 12, backgroundColor: theme.surface, border: `1px solid ${theme.surfaceBorder}`, overflow: "hidden" }}>
+              <div style={{ position: "absolute", left: HIGHLIGHT_X, top: 0, width: BAR_W, height: ROW_H, borderRadius: 12, backgroundColor: theme.surface, border: `1px solid ${theme.surfaceBorder}`, overflow: "hidden", zIndex: 1 }}>
                 <div style={{ display: "flex", height: "100%", width: "100%", transform: `scaleX(${grow})`, transformOrigin: "left" }}>
                   {sortActions(c.actions).map((a, j) => (
                     <div key={j} style={{ width: `${a.freq}%`, height: "100%", backgroundColor: actionColor(a.action) }} />

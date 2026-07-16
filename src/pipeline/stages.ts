@@ -21,6 +21,7 @@ import { alignCaptions } from "../openai/captions.js";
 import { aggression } from "../poker/ranges.js";
 import { hasPerNodeLines, voiceoverFromLines, timeCameraToLines } from "../cameraTiming.js";
 import { resolveDrawingTimings, stripAnimationTags } from "../drawingAnimations.js";
+import { recommendSpot, type SpotRecommendation } from "../openai/spot.js";
 
 // Both the tsx CLI and `next dev` run from the reels-pipeline package root, so
 // cwd is a stable anchor (import.meta.url is unreliable once Next bundles this).
@@ -69,6 +70,17 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   let loadId = brief.loadId;
   let gameId = brief.gameId;
   let preflopLine = brief.preflopLine;
+  let aiSelection: SpotRecommendation | null = null;
+  if (!loadId && !preflopLine?.length && brief.autoSelectSpot) {
+    console.log("  • AI is searching available solver spots");
+    aiSelection = await recommendSpot(brief.topic, brief.concept);
+    if (aiSelection) {
+      loadId = aiSelection.loadId;
+      console.log(`  ✓ AI selected load ${loadId}: ${aiSelection.description}`);
+    } else {
+      console.warn("  ⚠ AI could not find a matching published solver spot");
+    }
+  }
   if (!loadId && brief.preflopLine?.length) {
     const found = await loadIdFromLine(brief.preflopLine, brief.gameId);
     if (found) {
@@ -187,6 +199,11 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     gameId,
     preflopLine,
     street,
+    aiSelection: aiSelection ? {
+      loadId: aiSelection.loadId,
+      description: aiSelection.description,
+      reason: aiSelection.reason,
+    } : undefined,
     pool,
     scenes,
   });

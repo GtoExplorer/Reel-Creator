@@ -161,6 +161,7 @@ const server = http.createServer(async (req, res) => {
         preflopLine: Array.isArray(f.preflopLine) && f.preflopLine.length ? f.preflopLine : undefined,
         loadId: f.loadId ? Number(f.loadId) : undefined,
         gameId: f.gameId ? String(f.gameId) : undefined,
+        autoSelectSpot: f.autoSelectSpot === true,
       });
     } catch (e) {
       res.writeHead(400, { "Content-Type": "text/plain" });

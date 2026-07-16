@@ -20,6 +20,7 @@ export async function POST(req: Request) {
       preflopLine: Array.isArray(f.preflopLine) && f.preflopLine.length ? f.preflopLine : undefined,
       loadId: f.loadId ? Number(f.loadId) : undefined,
       gameId: f.gameId ? String(f.gameId) : undefined,
+      autoSelectSpot: f.autoSelectSpot === true,
     });
   } catch (e) {
     return new Response("Invalid brief: " + (e as Error).message, { status: 400 });

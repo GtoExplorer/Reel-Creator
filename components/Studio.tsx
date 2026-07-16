@@ -224,18 +224,39 @@ export function Studio() {
   const previewManifest = draft ? draftToPreviewWithVoices(draft, manifest) : null;
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen flex-col md:flex-row">
       <Sidebar reels={reels} health={health} activeId={activeId} onNew={newReel} onEdit={editReel} onDelete={deleteReel} />
 
-      <main className="min-w-0 flex-1 p-6">
+      <main className="min-w-0 flex-1 p-4 lg:p-6">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Creator workspace</div>
+            <h1 className="mt-1 text-2xl font-semibold">Reel Studio</h1>
+          </div>
+          <div className="creator-steps">
+            {["Brief", "Create", "Voice", "Export"].map((label, i) => {
+              const current = step === "brief" ? 0 : finalUrl ? 3 : manifest && !manifestStale ? 2 : 1;
+              return <div key={label} className={i <= current ? "is-active" : ""}><span>{i + 1}</span>{label}</div>;
+            })}
+          </div>
+        </div>
         {step === "brief" || !draft ? (
           <BriefForm onDraft={(d) => loadDraftIntoEditor(d, d.briefId)} />
         ) : (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="grid grid-cols-1 gap-5 2xl:grid-cols-[minmax(0,1fr)_340px]">
             <div>
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-4 flex items-center justify-between rounded-xl border border-line bg-surface px-4 py-3">
                 <div>
-                  <h2 className="text-lg font-semibold">{draft.title}</h2>
+                  <h2 className="text-base font-semibold">{draft.title}</h2>
+                  {draft.aiSelection && (
+                    <div className="mt-2 max-w-2xl rounded-lg border border-accent/20 bg-accent/5 px-3 py-2">
+                      <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-accent">
+                        <span>AI-selected spot</span><span className="rounded-full bg-accent/15 px-2 py-0.5">Load {draft.aiSelection.loadId}</span>
+                      </div>
+                      <div className="mt-1 text-xs text-text">{draft.aiSelection.description}</div>
+                      <div className="mt-0.5 text-[11px] text-muted">{draft.aiSelection.reason}</div>
+                    </div>
+                  )}
                   <div className={`mt-1 text-xs ${saveStatus === "error" ? "text-red-300" : "text-muted"}`}>
                     {saveStatus === "saving"
                       ? "Saving draft..."
@@ -263,9 +284,12 @@ export function Studio() {
               />
             </div>
 
-            <div className="flex flex-col gap-3 self-start lg:sticky lg:top-6">
-              <div className="aspect-[9/16] w-full overflow-hidden rounded-xl bg-black">
+            <div className="flex flex-col gap-3 self-start 2xl:sticky 2xl:top-4">
+              <div className="rounded-2xl border border-line bg-surface p-3 shadow-2xl">
+                <div className="mb-3 flex items-center justify-between"><div><div className="text-sm font-semibold">Live preview</div><div className="text-[10px] text-muted">9:16 vertical video</div></div><span className="rounded-full bg-green-500/10 px-2 py-1 text-[10px] font-medium text-green-300">Live</span></div>
+                <div className="aspect-[9/16] w-full overflow-hidden rounded-xl bg-black">
                 {mounted && previewManifest && <ReelPlayer manifest={previewManifest} />}
+                </div>
               </div>
               <div className="text-xs text-muted">
                 {manifest
@@ -274,11 +298,11 @@ export function Studio() {
                     : "Previewing with voice + captions"
                   : "Live preview (visuals only — generate voices for audio + captions)"}
               </div>
-              <div className="flex gap-2">
-                <button className="btn-ghost flex-1" disabled={busy} onClick={voiceNow}>
+              <div className="grid grid-cols-2 gap-2 rounded-xl border border-line bg-surface p-3">
+                <button className="btn-ghost" disabled={busy} onClick={voiceNow}>
                   {voicing ? "Voicing…" : manifestStale && manifest ? "Regenerate voices" : "Generate voices"}
                 </button>
-                <button className="btn flex-1" disabled={busy} onClick={render}>
+                <button className="btn" disabled={busy} onClick={render}>
                   {rendering ? "Rendering…" : "Render MP4"}
                 </button>
               </div>

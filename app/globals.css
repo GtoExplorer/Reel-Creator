@@ -20,6 +20,7 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
+  background-image: radial-gradient(circle at 75% -20%, rgba(208, 171, 29, 0.08), transparent 34%);
 }
 
 /* Dark, slim scrollbars to match the surface palette. */
@@ -84,12 +85,13 @@ input[type="range"] {
   border: 1px solid var(--color-line);
   border-radius: 8px;
   color: var(--color-text);
-  padding: 9px 11px;
+  padding: 10px 12px;
   font: inherit;
 }
 .input:focus {
   outline: none;
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(208, 171, 29, 0.1);
 }
 textarea.input {
   resize: vertical;
@@ -112,4 +114,61 @@ textarea.input {
   white-space: pre-wrap;
   color: #cfd3d6;
   overflow: auto;
+}
+
+.creator-icon-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 16px;
+  transition: 120ms ease;
+}
+.creator-icon-button:hover:not(:disabled) { border-color: #55575a; background: rgba(255,255,255,.06); }
+.creator-icon-button:disabled { cursor: default; opacity: .3; }
+.creator-icon-danger:hover:not(:disabled) { border-color: rgba(248,113,113,.5); color: #fca5a5; background: rgba(239,68,68,.1); }
+
+.creator-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.creator-disclosure {
+  margin-top: 18px;
+  border-top: 1px solid var(--color-line);
+  padding-top: 4px;
+}
+.creator-disclosure > summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 2px 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.creator-disclosure > summary::-webkit-details-marker { display: none; }
+.creator-disclosure > summary::after { content: "+"; margin-left: auto; color: var(--color-muted); font-size: 18px; font-weight: 400; }
+.creator-disclosure[open] > summary::after { content: "−"; }
+.creator-disclosure > summary span { color: var(--color-muted); font-size: 11px; font-weight: 400; }
+
+.creator-steps { display: flex; align-items: center; gap: 4px; }
+.creator-steps > div { display: flex; align-items: center; gap: 6px; color: #6f7073; font-size: 11px; font-weight: 600; }
+.creator-steps > div:not(:last-child)::after { content: ""; width: 20px; height: 1px; margin: 0 4px; background: var(--color-line); }
+.creator-steps span { display: grid; width: 22px; height: 22px; place-items: center; border: 1px solid var(--color-line); border-radius: 999px; font-size: 10px; }
+.creator-steps .is-active { color: var(--color-text); }
+.creator-steps .is-active span { border-color: var(--color-accent); background: var(--color-accent); color: #18191a; }
+
+@media (max-width: 900px) {
+  .creator-steps > div { font-size: 0; }
+  .creator-steps > div:not(:last-child)::after { width: 10px; }
 }

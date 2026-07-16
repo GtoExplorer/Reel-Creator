@@ -28,7 +28,7 @@ export function Sidebar({
   onDelete: (id: string) => void;
 }) {
   return (
-    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-line bg-surface">
+    <aside className="flex h-auto w-full shrink-0 flex-col border-b border-line bg-surface md:sticky md:top-0 md:h-screen md:w-64 md:border-b-0 md:border-r">
       <div className="border-b border-line p-4">
         <div className="text-xl font-bold">
           GTO<span className="text-accent">CENTRAL</span>
@@ -46,8 +46,8 @@ export function Sidebar({
         </div>
       </div>
 
-      <div className="label px-4 pb-1">Your reels</div>
-      <div className="flex flex-1 flex-col gap-2 overflow-auto px-3 pb-4">
+      <div className="label hidden px-4 pb-1 md:block">Your reels</div>
+      <div className="hidden flex-1 flex-col gap-2 overflow-auto px-3 pb-4 md:flex">
         {reels.length === 0 && <div className="px-1 text-sm text-muted">No reels yet.</div>}
         {reels.map((r) => (
           <div
