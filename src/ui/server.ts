@@ -157,7 +157,7 @@ const server = http.createServer(async (req, res) => {
         topic: String(f.topic || ""),
         concept: String(f.concept || ""),
         board: f.board ? String(f.board) : undefined,
-        street: f.street || "flop",
+        street: f.street || undefined,
         preflopLine: Array.isArray(f.preflopLine) && f.preflopLine.length ? f.preflopLine : undefined,
         loadId: f.loadId ? Number(f.loadId) : undefined,
         gameId: f.gameId ? String(f.gameId) : undefined,
@@ -390,11 +390,11 @@ function delScene(i){if(draft.scenes.length<=1)return;draft.scenes.splice(i,1);a
 function addScene(){draft.scenes.push(makeScene($('addType').value));audio.push(null);renderEditor();
   $('editCard').scrollIntoView({block:'end'});}
 function makeScene(t){
-  const p=draft.pool||{};const s={type:t,headline:'',subtext:'',voiceover:''};
+  const p=draft.pool||{};const street=draft.street||'flop';const s={type:t,headline:'',subtext:'',voiceover:'',street};
   if(t==='preflopMatrix'){s.rangeGrid=p.preflopGrid;s.preflopLine=draft.preflopLine;s.headline=p.preflopLabel||'Preflop Range';}
   else if(t==='flowchart'){s.image=p.image;s.imageW=p.imageW;s.imageH=p.imageH;s.nodes=p.nodes||[];s.camera=[{cx:0.5,cy:0.5,zoom:1},{cx:0.5,cy:0.5,zoom:1.2}];s.headline='Decision Tree';}
-  else if(t==='barCharts'){s.category=p.boardCategories?'flop_top_card_rank':'sdv';s.categories=p.boardCategories||p.categories;s.headline=p.boardLabel||'Bar Charts';}
-  else if(t==='freqBars'){const cats=p.boardCategories||p.categories;const focus=cats&&cats[Math.floor((cats.length-1)/2)];s.category=p.boardCategories?'flop_top_card_rank':'sdv';s.categories=cats;s.barValue=focus&&focus.category||p.highlightLabel;s.freqBars=focus&&focus.actions||p.freqBars;s.headline=s.barValue||'Frequencies';}
+  else if(t==='barCharts'){s.category=p.boardCategories?street+'_top_card_rank':'sdv';s.categories=p.boardCategories||p.categories;s.headline=p.boardLabel||'Bar Charts';}
+  else if(t==='freqBars'){const cats=p.boardCategories||p.categories;const focus=cats&&cats[Math.floor((cats.length-1)/2)];s.category=p.boardCategories?street+'_top_card_rank':'sdv';s.categories=cats;s.barValue=focus&&focus.category||p.highlightLabel;s.freqBars=focus&&focus.actions||p.freqBars;s.headline=s.barValue||'Frequencies';}
   else if(t==='hook'){s.headline='New hook';}
   else if(t==='cta'){s.headline='Explore on GTOCentral';}
   return s;

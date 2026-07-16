@@ -217,6 +217,7 @@ export const RenderScene = z.object({
   holdSec: z.number().min(0).optional(), // linger on the final frame this long after the voiceover ends
   words: z.array(WordTimestamp),
   loadId: z.number().optional(), // scene-level override; defaults to draft loadId
+  street: z.enum(["flop", "turn", "river"]).optional(), // street belonging to the scene's load
   gameId: z.string().optional(), // preflop wizard game used to resolve this scene's load id
   preflopLine: z.array(z.string()).optional(), // preflopMatrix scene: comma-separated action sequence source
   filters: z.array(SceneFilter).optional(), // property/value filters applied to scene data fetches
@@ -246,6 +247,7 @@ export const DraftScene = z.object({
   holdSec: z.number().min(0).optional(), // linger on the final frame this long before the next scene
   customAudio: z.string().optional(), // recorded/uploaded source clip, persisted with draft edits
   loadId: z.number().optional(), // scene-level override; defaults to draft loadId
+  street: z.enum(["flop", "turn", "river"]).optional(), // street belonging to the scene's load
   gameId: z.string().optional(), // preflop wizard game used to resolve this scene's load id
   preflopLine: z.array(z.string()).optional(), // preflopMatrix scene: comma-separated action sequence source
   filters: z.array(SceneFilter).optional(), // property/value filters applied to scene data fetches

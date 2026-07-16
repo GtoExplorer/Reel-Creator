@@ -31,16 +31,21 @@ export function FlowchartTreeEditor({
   onChange: (patch: Partial<DraftScene>) => void;
 }) {
   const loadId = scene.loadId ?? defaultLoadId;
+  const effectiveStreet = scene.street ?? street;
   const direction = scene.flowchart?.direction ?? "TB";
   const tree = (scene.tree as TreeNode[] | undefined) ?? null;
   const nodes = useMemo(() => (scene.nodes ?? []).filter((n) => n.kind !== "edge"), [scene.nodes]);
 
   const [leafs, setLeafs] = useState<number | string>(scene.treeLeafs ?? 7);
   const [properties, setProperties] = useState<string[]>(
-    () => scene.treeProperties ?? defaultTreePropertySelection(street)
+    () => scene.treeProperties ?? defaultTreePropertySelection(effectiveStreet)
   );
   const [labels, setLabels] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setProperties(defaultTreePropertySelection(effectiveStreet));
+  }, [effectiveStreet]);
 
   useEffect(() => {
     fetch("/api/properties")
@@ -49,7 +54,7 @@ export function FlowchartTreeEditor({
       .catch(() => {});
   }, []);
 
-  const groups = treePropertyGroups(street);
+  const groups = treePropertyGroups(effectiveStreet);
   const labelFor = (p: string) => labels[p] || prettyProperty(p);
   const expanded = useMemo(
     () => new Set((tree ?? []).filter((n) => n.children?.length).map((n) => String(n.node_id))),
@@ -91,7 +96,7 @@ export function FlowchartTreeEditor({
             tree,
             nodeId: Number(n.id),
             loadId,
-            street: street || "flop",
+            street: effectiveStreet,
             leafs: depthValue(),
             properties,
             filters: scene.filters ?? [],
@@ -121,9 +126,12 @@ export function FlowchartTreeEditor({
       const propParam = properties.length ? `&properties=${encodeURIComponent(properties.join(","))}` : "";
       const filtersParam = encodeURIComponent(JSON.stringify(scene.filters ?? []));
       const r = await fetch(
-        `/api/flowchart?loadId=${loadId}&street=${encodeURIComponent(street || "flop")}&direction=${direction}&leafs=${depthValue()}${propParam}&filters=${filtersParam}`
+        `/api/flowchart?loadId=${loadId}&direction=${direction}&leafs=${depthValue()}${propParam}&filters=${filtersParam}`
       ).then((res) => res.json());
-      if (r.flowchart && r.nodes && r.tree) commitTree(r, true);
+      if (r.flowchart && r.nodes && r.tree) {
+        onChange({ street: r.street });
+        commitTree(r, true);
+      }
       else alert(r.error || "No flowchart for that load/depth/properties");
     } catch {
       alert("Flowchart fetch failed");

@@ -40,6 +40,7 @@ export function SceneDataControls({
   const scenePreflopLine = scene.preflopLine ?? defaultPreflopLine ?? [];
   const scenePreflopLineText = scenePreflopLine.join(", ");
   const filters = scene.filters ?? [];
+  const effectiveStreet = scene.street ?? street;
 
   const [loadText, setLoadText] = useState(sceneLoadId ? String(sceneLoadId) : "");
   const [lineText, setLineText] = useState(scenePreflopLineText);
@@ -68,7 +69,7 @@ export function SceneDataControls({
       .catch(() => {});
   }, []);
 
-  const groups = propertyGroups(street);
+  const groups = propertyGroups(effectiveStreet);
   const allProperties = useMemo(() => groups.flatMap((g) => g.categories), [groups]);
   const valueOptions = values[filterProperty] ?? [];
   const labelFor = (p: string) => labels[p] || prettyProperty(p);
@@ -124,7 +125,7 @@ export function SceneDataControls({
       setBusy(true);
       try {
         const r = await fetch(
-          `/api/aggregate?loadId=${nextLoadId}&street=${encodeURIComponent(street || "flop")}&category=${encodeURIComponent(
+          `/api/aggregate?loadId=${nextLoadId}&category=${encodeURIComponent(
             category
           )}&filters=${filtersParam(nextFilters)}`
         ).then((res) => res.json());
@@ -135,6 +136,7 @@ export function SceneDataControls({
             const selected = categories.find((c) => c.category === currentBar) ?? categories[0];
             onChange({
               loadId: nextLoadId,
+              street: r.street,
               filters: nextFilters,
               categories,
               category,
@@ -146,6 +148,7 @@ export function SceneDataControls({
           }
           onChange({
             loadId: nextLoadId,
+            street: r.street,
             filters: nextFilters,
             categories,
             category,
@@ -171,11 +174,12 @@ export function SceneDataControls({
           ? `&properties=${encodeURIComponent(scene.treeProperties.join(","))}`
           : "";
         const r = await fetch(
-          `/api/flowchart?loadId=${nextLoadId}&street=${encodeURIComponent(street || "flop")}&direction=${direction}&leafs=${leafs}${propParam}&filters=${filtersParam(nextFilters)}`
+          `/api/flowchart?loadId=${nextLoadId}&direction=${direction}&leafs=${leafs}${propParam}&filters=${filtersParam(nextFilters)}`
         ).then((res) => res.json());
         if (r.flowchart && r.nodes) {
           onChange({
             loadId: nextLoadId,
+            street: r.street,
             filters: nextFilters,
             flowchart: r.flowchart,
             nodes: r.nodes,
@@ -240,11 +244,12 @@ export function SceneDataControls({
         return;
       }
       const r = await fetch(
-        `/api/flowchart?loadId=${nextLoadId}&street=${encodeURIComponent(street || "flop")}&direction=${direction}&filters=${filtersParam(filters)}`
+        `/api/flowchart?loadId=${nextLoadId}&direction=${direction}&filters=${filtersParam(filters)}`
       ).then((res) => res.json());
       if (r.flowchart && r.nodes) {
         onChange({
           loadId: nextLoadId,
+          street: r.street,
           flowchart: r.flowchart,
           nodes: r.nodes,
           tree: r.tree,

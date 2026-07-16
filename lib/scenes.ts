@@ -20,9 +20,10 @@ export function remapCamera(camera: CameraStep[], oldNodes: FlowNode[], newNodes
 
 // Build a fresh scene of any type, pulling its data from the draft's asset pool
 // so add-scene needs no new draft generation. Pure + client-safe.
-export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number, gameId?: string, preflopLine?: string[]): DraftScene {
+export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number, gameId?: string, preflopLine?: string[], street?: string): DraftScene {
   const p = pool ?? {};
-  const base: DraftScene = { type: t, headline: "", subtext: "", voiceover: "" };
+  const sceneStreet = street === "turn" || street === "river" ? street : "flop";
+  const base: DraftScene = { type: t, headline: "", subtext: "", voiceover: "", street: sceneStreet };
   const barCategories = p.boardCategories ?? p.categories;
   const focusBar = barCategories?.[Math.floor((barCategories.length - 1) / 2)];
   switch (t) {
@@ -43,13 +44,13 @@ export function makeScene(t: SceneType, pool?: DraftPool, loadId?: number, gameI
         headline: "Decision Tree",
       };
     case "barCharts":
-      return { ...base, loadId, gameId, categories: barCategories, category: p.boardCategories ? "flop_top_card_rank" : "sdv", headline: p.boardLabel ?? "Bar Charts" };
+      return { ...base, loadId, gameId, categories: barCategories, category: p.boardCategories ? `${sceneStreet}_top_card_rank` : "sdv", headline: p.boardLabel ?? "Bar Charts" };
     case "freqBars":
       return {
         ...base,
         loadId,
         gameId,
-        category: p.boardCategories ? "flop_top_card_rank" : "sdv",
+        category: p.boardCategories ? `${sceneStreet}_top_card_rank` : "sdv",
         categories: barCategories,
         barValue: focusBar?.category ?? p.highlightLabel,
         freqBars: focusBar?.actions ?? p.freqBars,

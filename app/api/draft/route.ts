@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       topic: String(f.topic || ""),
       concept: String(f.concept || ""),
       board: f.board ? String(f.board) : undefined,
-      street: f.street || "flop",
+      street: f.street || undefined,
       preflopLine: Array.isArray(f.preflopLine) && f.preflopLine.length ? f.preflopLine : undefined,
       loadId: f.loadId ? Number(f.loadId) : undefined,
       gameId: f.gameId ? String(f.gameId) : undefined,

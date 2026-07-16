@@ -34,7 +34,7 @@ export function PropertyPicker({
     setBusy(true);
     try {
       const r = await fetch(
-        `/api/aggregate?loadId=${loadId}&street=${encodeURIComponent(street || "flop")}&category=${encodeURIComponent(category)}`
+        `/api/aggregate?loadId=${loadId}&category=${encodeURIComponent(category)}`
       ).then((res) => res.json());
       if (r.categories?.length) onPick(r.categories, category, r.label || prettyProperty(category));
       else alert(r.error || "No data for that property on this load");

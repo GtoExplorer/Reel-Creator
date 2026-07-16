@@ -13,7 +13,7 @@ import {
   type FlowchartLayout,
   type FlowNode,
 } from "../types.js";
-import { fetchSpotData, lineFromLoadId, loadIdFromLine } from "../data/solverApi.js";
+import { fetchLoadStreet, fetchSpotData, lineFromLoadId, loadIdFromLine } from "../data/solverApi.js";
 import { buildFlowchart } from "../flowchart/build.js";
 import { generateStoryboard } from "../openai/script.js";
 import { synthesizeVoiceover } from "../openai/voiceover.js";
@@ -90,11 +90,13 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     }
   }
 
+  const street = loadId ? (await fetchLoadStreet(loadId)) ?? brief.street ?? "flop" : brief.street ?? "flop";
+
   let fcLayout: FlowchartLayout | undefined;
   let fcNodes: FlowNode[] | undefined;
   let fcTree: unknown[] | undefined;
   if (loadId) {
-    const fc = await buildFlowchart(loadId, brief.street ?? "flop", 5, [], "TB");
+    const fc = await buildFlowchart(loadId, street, 5, [], "TB");
     if (fc) {
       fcLayout = fc.layout;
       fcNodes = fc.nodes;
@@ -106,13 +108,13 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
   }
 
   console.log("  • Fetching solver data");
-  const resolvedBrief = { ...brief, loadId, gameId, preflopLine };
+  const resolvedBrief = { ...brief, loadId, gameId, preflopLine, street };
   const spot = await fetchSpotData(resolvedBrief);
 
   console.log("  • Writing script + storyboard (OpenAI)");
   const storyboard = await generateStoryboard(brief, summariseSpot(spot));
 
-  const boardCat = brief.boardCategory ?? "flop_top_card_rank";
+  const boardCat = brief.boardCategory ?? (street === "turn" ? "turn_top_card_rank" : "flop_top_card_rank");
   const barCategories = spot.boardCategories ?? spot.categories;
   const focusBar = barCategories[Math.floor((barCategories.length - 1) / 2)];
   const resolve = (t: SceneType): Pick<DraftScene, "type" | "flowchart" | "categories" | "freqBars" | "rangeGrid" | "category" | "barValue"> => {
@@ -142,6 +144,7 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     if (["flowchart", "preflopMatrix", "barCharts", "freqBars"].includes(r.type)) {
       base.loadId = loadId;
       base.gameId = gameId;
+      base.street = street;
     }
     if (r.type === "preflopMatrix") {
       base.loadId = undefined;
@@ -183,7 +186,7 @@ export async function prepareDraft(brief: Brief): Promise<DraftManifest> {
     loadId,
     gameId,
     preflopLine,
-    street: brief.street ?? "flop",
+    street,
     pool,
     scenes,
   });
@@ -245,6 +248,7 @@ export async function voiceDraft(draft: DraftManifest, edits: SceneEdit[] = []):
       voiceover,
       customAudio: e.customAudio ?? d.customAudio,
       loadId: d.loadId,
+      street: d.street,
       gameId: d.gameId,
       preflopLine: d.preflopLine,
       filters: d.filters,

@@ -10,6 +10,7 @@ import {
 } from "@/src/flowchart/build";
 import { parseSceneFilters } from "@/src/data/filters";
 import { SceneFilter } from "@/src/types";
+import { fetchLoadStreet } from "@/src/data/solverApi";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,16 +19,17 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams;
   const loadId = Number(sp.get("loadId"));
-  const street = sp.get("street") || "flop";
   const direction = sp.get("direction") === "LR" ? "LR" : "TB";
   const leafs = Number(sp.get("leafs")) || 7;
   const properties = sp.get("properties") || undefined;
   const filters = parseSceneFilters(sp.get("filters"));
   if (!loadId) return NextResponse.json({ error: "loadId required" }, { status: 400 });
   try {
+    const street = await fetchLoadStreet(loadId);
+    if (!street) return NextResponse.json({ error: "Could not determine the street for that load." }, { status: 404 });
     const r = await buildFlowchart(loadId, street, leafs, filters, direction, properties);
     if (!r) return NextResponse.json({ error: "No flowchart for that load/filter combination." }, { status: 404 });
-    return NextResponse.json({ flowchart: r.layout, nodes: r.nodes, tree: r.raw });
+    return NextResponse.json({ flowchart: r.layout, nodes: r.nodes, tree: r.raw, street });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
@@ -54,7 +56,7 @@ export async function POST(req: Request) {
     if (op === "expand") {
       const loadId = Number(body.loadId);
       const nodeId = Number(body.nodeId);
-      const street = typeof body.street === "string" ? body.street : "flop";
+      const street = await fetchLoadStreet(loadId);
       const leafs = Number(body.leafs) || 5;
       const properties = Array.isArray(body.properties)
         ? (body.properties as string[]).filter((p) => typeof p === "string" && p)
@@ -68,6 +70,7 @@ export async function POST(req: Request) {
       if (!loadId || Number.isNaN(nodeId)) {
         return NextResponse.json({ error: "loadId and nodeId required" }, { status: 400 });
       }
+      if (!street) return NextResponse.json({ error: "Could not determine the street for that load." }, { status: 404 });
       const q = nodeDescription(tree, nodeId);
       const fetched = await fetchTree(loadId, street, leafs, properties.join(",") || undefined, filters, q || undefined);
       if (!fetched) {

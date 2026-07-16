@@ -40,6 +40,18 @@ export async function authGet(pathStr: string): Promise<Response> {
   return fetch(`${proxyBase()}${pathStr}`, { headers: { Cookie: await authCookie() } });
 }
 
+export type PostflopStreet = "flop" | "turn" | "river";
+
+// A load is solved for one specific postflop street. Always ask the load
+// endpoint instead of inferring it from the caller or defaulting to flop.
+export async function fetchLoadStreet(loadId: number): Promise<PostflopStreet | null> {
+  if (!config.explorerSessionSecret || !config.explorerLoginEmail) return null;
+  const res = await authGet(`/loads/${loadId}`);
+  if (!res.ok) return null;
+  const street = String(((await res.json()) as { street?: unknown }).street ?? "").toLowerCase();
+  return street === "flop" || street === "turn" || street === "river" ? street : null;
+}
+
 function buildSpot(label: string, categories: CategoryStrategy[], brief: Brief): SpotData {
   // Keep the API's natural order (same as the Explorer's bar charts) — no sorting.
   const ordered = categories.slice(0, MAX_BARS);
@@ -458,7 +470,7 @@ export async function fetchSpotData(brief: Brief): Promise<SpotData> {
   const spot = buildSpot(label, categories, brief);
 
   // Native preflop matrix + board-selection bars (best-effort; mock on failure).
-  const boardCat = brief.boardCategory ?? "flop_top_card_rank";
+  const boardCat = brief.boardCategory ?? (brief.street === "turn" ? "turn_top_card_rank" : "flop_top_card_rank");
   const [pre, boardCats] = await Promise.all([
     brief.preflopLine?.length
       ? fetchPreflopMatrixForLine(brief.preflopLine, brief.gameId)
